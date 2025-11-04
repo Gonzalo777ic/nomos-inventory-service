@@ -1,17 +1,28 @@
 package com.nomos.inventory.service.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // 🎯 Importar
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * Entidad: Representa un lote específico de existencias físicas
+ * de un producto en un almacén.
+ */
 @Entity
-@Table(name = "inventory_items")
+@Table(name = "inventory_items", uniqueConstraints = {
+        // Asegura que no haya dos lotes con el mismo número para el mismo producto en el mismo almacén
+        @UniqueConstraint(columnNames = {"product_id", "warehouse_id", "lotNumber"})
+})
 @Data
-// 🎯 CORRECCIÓN CLAVE: Jackson ignora metadatos de Hibernate y la referencia recursiva.
-// El 'product' se ignora aquí por seguridad si la carga perezosa persiste,
-// o se podría quitar 'product' si se cambia la estrategia de Fetch.
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class InventoryItem {
 
@@ -19,24 +30,41 @@ public class InventoryItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🎯 CORRECCIÓN: Cambiado a EAGER Fetch.
-    // Esto fuerza a que el Product se cargue junto con el InventoryItem en una sola consulta.
+    // 1. FK a Product
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
+    @NotNull(message = "El producto es obligatorio")
     private Product product;
 
-    // Cantidad actual disponible para esta existencia/lote.
+    // 2. FK a Warehouse
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "warehouse_id", nullable = false)
+    @NotNull(message = "El almacén es obligatorio")
+    private Warehouse warehouse;
+
+    // Cantidad actual disponible. Debe ser >= 0.
     @Column(nullable = false)
+    @NotNull(message = "El stock actual es obligatorio")
+    @PositiveOrZero(message = "El stock no puede ser negativo")
     private Integer currentStock;
 
-    // Costo unitario de adquisición para este lote específico.
+    // Costo unitario de adquisición para este lote.
+    @NotNull(message = "El costo unitario es obligatorio")
+    @PositiveOrZero(message = "El costo no puede ser negativo")
     private Double unitCost;
 
-    // Atributos de inventario físico
+    // Número de Lote (parte de la clave de unicidad)
+    @NotBlank(message = "El número de lote es obligatorio")
+    @Column(nullable = false)
     private String lotNumber;
-    private LocalDate expirationDate; // Fecha de Vencimiento
-    private String location; // Ubicación en el almacén (ej: 'Aisle 3, Shelf B')
 
-    // Campos de auditoría simple
+    // Atributos de inventario físico
+    private LocalDate expirationDate; // Fecha de Vencimiento
+
+    // Ubicación física dentro del almacén (ej: 'Pasillo A, Estante 3')
+    private String location;
+
+    // Fecha en que este lote fue registrado en el sistema
+    @Column(nullable = false, updatable = false)
     private LocalDateTime entryDate = LocalDateTime.now();
 }

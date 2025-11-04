@@ -2,12 +2,16 @@ package com.nomos.inventory.service.repository;
 
 import com.nomos.inventory.service.model.Brand;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
-@Repository
+/**
+ * Repositorio para la entidad Brand.
+ */
 public interface BrandRepository extends JpaRepository<Brand, Long> {
-    // Puedes añadir métodos de búsqueda personalizados si son necesarios.
-    Optional<Brand> findByNameIgnoreCase(String name);
+    // Métodos para verificar unicidad de nombre y código
+    boolean existsByName(String name);
+    boolean existsByCode(String code);
+
+    // Métodos para verificar unicidad excluyendo el ID actual (para actualizaciones)
+    boolean existsByNameAndIdNot(String name, Long id);
+    boolean existsByCodeAndIdNot(String code, Long id);
 }

@@ -2,80 +2,113 @@ package com.nomos.inventory.service.controller;
 
 import com.nomos.inventory.service.model.InventoryItem;
 import com.nomos.inventory.service.model.Product;
+import com.nomos.inventory.service.model.Warehouse;
 import com.nomos.inventory.service.repository.InventoryItemRepository;
 import com.nomos.inventory.service.repository.ProductRepository;
+import com.nomos.inventory.service.repository.WarehouseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional; // 🎯 Importar la anotación Transactional
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/inventory/items") // 🎯 Nueva ruta base para el CRUD de existencias
+@RequestMapping("/api/inventory/items")
 @RequiredArgsConstructor
 public class InventoryItemController {
 
     private final InventoryItemRepository itemRepository;
     private final ProductRepository productRepository;
+    private final WarehouseRepository warehouseRepository; // Inyección para validar FK
 
     // 1. OBTENER EXISTENCIAS POR PRODUCTO (READ)
-    // Ruta: GET /api/inventory/items/product/{productId}
     @GetMapping("/product/{productId}")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
-    @Transactional // <--- CORRECCIÓN: Permite que la relación LAZY (Product) se cargue durante la serialización.
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER', 'ROLE_AUDITOR')")
     public ResponseEntity<List<InventoryItem>> getItemsByProduct(@PathVariable Long productId) {
-        // Asegura que el producto exista (opcional, pero buena práctica)
         if (!productRepository.existsById(productId)) {
             return ResponseEntity.notFound().build();
         }
-        // Utiliza el método derivado que creamos en el repositorio
+        // Devuelve todos los lotes para ese producto
         return ResponseEntity.ok(itemRepository.findByProductId(productId));
     }
 
     // 2. CREAR NUEVA EXISTENCIA / LOTE (CREATE)
-    // Ruta: POST /api/inventory/items
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPPLIER')") // Solo quien introduce stock
-    public ResponseEntity<InventoryItem> createItem(@RequestBody InventoryItem item) {
-        // 🎯 VALIDACIÓN CLAVE: Asegurar que el ID del producto es válido
-        if (item.getProduct() == null || item.getProduct().getId() == null) {
-            return ResponseEntity.badRequest().body(null);
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPPLIER')")
+    public ResponseEntity<?> createItem(@Valid @RequestBody InventoryItem item) {
+
+        Long productId = item.getProduct().getId();
+        Long warehouseId = item.getWarehouse().getId();
+        String lotNumber = item.getLotNumber();
+
+        // 2.1. Validar existencias de FKs
+        Optional<Product> productOpt = productRepository.findById(productId);
+        Optional<Warehouse> warehouseOpt = warehouseRepository.findById(warehouseId);
+
+        if (productOpt.isEmpty() || warehouseOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("El Producto o el Almacén referenciado no existen.");
         }
 
-        // Recuperar la entidad Product para asegurar la relación
-        Product product = productRepository.findById(item.getProduct().getId())
-                .orElse(null);
-
-        if (product == null) {
-            // El producto al que se intenta asociar el inventario no existe.
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        // 2.2. Validar Unicidad (UNIQUE(productId, warehouseId, lotNumber))
+        if (itemRepository.findByProductIdAndWarehouseIdAndLotNumber(productId, warehouseId, lotNumber).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Ya existe un lote con número '" + lotNumber +
+                            "' para el producto " + productId + " en el almacén " + warehouseId + ".");
         }
 
-        // Asociar la entidad Product completa al InventoryItem
-        item.setProduct(product);
+        // 2.3. Asociar entidades completas antes de guardar
+        item.setProduct(productOpt.get());
+        item.setWarehouse(warehouseOpt.get());
 
+        // La fecha de entrada se auto-establece en el modelo
         InventoryItem savedItem = itemRepository.save(item);
         return new ResponseEntity<>(savedItem, HttpStatus.CREATED);
     }
 
     // 3. MODIFICAR EXISTENCIA / LOTE (UPDATE)
-    // Ruta: PUT /api/inventory/items/{id}
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')") // Modificar existencias es crítico, solo Admin
-    public ResponseEntity<InventoryItem> updateItem(@PathVariable Long id, @RequestBody InventoryItem itemDetails) {
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> updateItem(@PathVariable Long id, @Valid @RequestBody InventoryItem itemDetails) {
         return itemRepository.findById(id).map(existingItem -> {
 
-            // Actualizar los campos del lote
+            Long newProductId = itemDetails.getProduct().getId();
+            Long newWarehouseId = itemDetails.getWarehouse().getId();
+            String newLotNumber = itemDetails.getLotNumber();
+
+            // 3.1. Validar que el Producto y Almacén (FKs) existan
+            Optional<Product> productOpt = productRepository.findById(newProductId);
+            Optional<Warehouse> warehouseOpt = warehouseRepository.findById(newWarehouseId);
+
+            if (productOpt.isEmpty() || warehouseOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("El Producto o el Almacén referenciado no existen.");
+            }
+
+            // 3.2. Validar Unicidad si alguno de los campos clave (product, warehouse, lotNumber) ha cambiado
+            if (!newProductId.equals(existingItem.getProduct().getId()) ||
+                    !newWarehouseId.equals(existingItem.getWarehouse().getId()) ||
+                    !newLotNumber.equals(existingItem.getLotNumber())) {
+
+                Optional<InventoryItem> conflict = itemRepository.findByProductIdAndWarehouseIdAndLotNumber(newProductId, newWarehouseId, newLotNumber);
+
+                if (conflict.isPresent() && !conflict.get().getId().equals(id)) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body("El nuevo lote '" + newLotNumber +
+                                    "' ya existe para el producto " + newProductId + " en el almacén " + newWarehouseId + ".");
+                }
+            }
+
+            // 3.3. Actualizar campos del lote (incluyendo FKs si cambian)
+            existingItem.setProduct(productOpt.get());
+            existingItem.setWarehouse(warehouseOpt.get());
             existingItem.setCurrentStock(itemDetails.getCurrentStock());
             existingItem.setUnitCost(itemDetails.getUnitCost());
-            existingItem.setLotNumber(itemDetails.getLotNumber());
+            existingItem.setLotNumber(newLotNumber);
             existingItem.setExpirationDate(itemDetails.getExpirationDate());
             existingItem.setLocation(itemDetails.getLocation());
-
-            // 🛑 NOTA: No permitimos cambiar el product_id en la modificación del item.
 
             InventoryItem updatedItem = itemRepository.save(existingItem);
             return ResponseEntity.ok(updatedItem);
@@ -83,17 +116,27 @@ public class InventoryItemController {
     }
 
     // 4. ELIMINAR EXISTENCIA / LOTE (DELETE)
-    // Ruta: DELETE /api/inventory/items/{id}
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')") // Eliminación solo para Admin
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
         if (itemRepository.existsById(id)) {
             itemRepository.deleteById(id);
-            // HTTP 204 No Content
             return ResponseEntity.noContent().build();
         } else {
-            // HTTP 404 Not Found
             return ResponseEntity.notFound().build();
         }
+    }
+
+    // 5. OBTENER STOCK TOTAL DE UN PRODUCTO
+    @GetMapping("/product/{productId}/total-stock")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER', 'ROLE_AUDITOR')")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Integer> getTotalStockByProduct(@PathVariable Long productId) {
+        if (!productRepository.existsById(productId)) {
+            return ResponseEntity.notFound().build();
+        }
+        // Utiliza la consulta SUM del repositorio. Si no hay ítems, devuelve null (0 en el contexto de un Integer).
+        Integer totalStock = itemRepository.calculateTotalStockByProductId(productId);
+        return ResponseEntity.ok(totalStock != null ? totalStock : 0);
     }
 }

@@ -4,13 +4,12 @@ import com.nomos.inventory.service.model.Product;
 import com.nomos.inventory.service.repository.InventoryItemRepository;
 import com.nomos.inventory.service.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-
-// Importante: Necesitas inyectar el nuevo repositorio si fueras a manejar movimientos aquí,
-// pero por ahora solo ajustamos el ProductController
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/inventory/products")
@@ -27,34 +26,40 @@ public class ProductController {
         return ResponseEntity.ok(productRepository.findAll());
     }
 
-    // 2. POST (CREATE)
-    // El producto se crea SIN stock inicial.
+    // 2. POST (CREATE) - Añadida validación de unicidad de SKU
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        // En este punto, el frontend debería redirigir al formulario de 'StockEntry'
+    public ResponseEntity<?> createProduct(@Valid @RequestBody Product product) {
+        if (productRepository.existsBySku(product.getSku())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("El SKU '" + product.getSku() + "' ya está registrado en otro producto.");
+        }
+
         Product savedProduct = productRepository.save(product);
-        return ResponseEntity.ok(savedProduct);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
     }
 
-    // 3. PUT para actualización completa
+    // 3. PUT para actualización completa - Añadida validación de unicidad de SKU
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product productDetails) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @Valid @RequestBody Product productDetails) {
         return productRepository.findById(id).map(product -> {
 
+            // Validación de unicidad de SKU
+            if (productRepository.existsBySkuAndIdNot(productDetails.getSku(), id)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("El SKU '" + productDetails.getSku() + "' ya está registrado en otro producto.");
+            }
+
+            // Aplicación de cambios
             product.setSku(productDetails.getSku());
             product.setName(productDetails.getName());
-
-            // 🎯 CAMBIO: Usar getBrand/setBrand
-            product.setBrand(productDetails.getBrand());
-
+            product.setBrandId(productDetails.getBrandId());
             product.setPrice(productDetails.getPrice());
-            // 🛑 ELIMINADO: No se actualiza el stock aquí:
-            // product.setStock(productDetails.getStock());
-
             product.setImageUrl(productDetails.getImageUrl());
-            product.setSupplier(productDetails.getSupplier());
+            product.setMinStockThreshold(productDetails.getMinStockThreshold());
+            product.setCategoryId(productDetails.getCategoryId());
+            product.setUnitOfMeasureId(productDetails.getUnitOfMeasureId());
 
             Product updatedProduct = productRepository.save(product);
             return ResponseEntity.ok(updatedProduct);
@@ -66,8 +71,10 @@ public class ProductController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         if (productRepository.existsById(id)) {
-            // Nota: En un sistema real, se debe verificar si hay StockEntries
-            // asociadas y eliminarlas o marcarlas como inactivas primero.
+            // Nota de diseño: La eliminación de un producto con transacciones asociadas (InventoryItem, ProductSupplier)
+            // causará un error de ConstraintViolationException en la DB. En una aplicación real, se preferiría
+            // marcar el producto como INACTIVO en lugar de borrarlo, o forzar la eliminación de sus ítems de inventario
+            // y sus relaciones con proveedores (ProductSupplier) primero.
             productRepository.deleteById(id);
             return ResponseEntity.noContent().build();
         } else {
@@ -75,18 +82,15 @@ public class ProductController {
         }
     }
 
+    // 5. GET para obtener el stock total
     @GetMapping("/{id}/stock")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
     public ResponseEntity<Integer> getProductTotalStock(@PathVariable Long id) {
-        // Verifica si el producto existe
         if (!productRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-
-        // Ejecuta la consulta SUM(currentStock)
+        // Se asume que este método existe en InventoryItemRepository y retorna el stock agregado.
         Integer totalStock = inventoryItemRepository.calculateTotalStockByProductId(id);
-
-        // Si no hay ítems de inventario, el resultado es NULL, lo mapeamos a 0.
         return ResponseEntity.ok(totalStock != null ? totalStock : 0);
     }
 }
