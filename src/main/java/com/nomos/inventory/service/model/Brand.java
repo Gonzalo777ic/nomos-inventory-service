@@ -1,20 +1,24 @@
 package com.nomos.inventory.service.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-
-// Usaremos Lombok para simplificar el código
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+/**
+ * Entidad maestra para representar las Marcas de los Productos.
+ * Incluye campos para nombre, código único, sitio web y URL del logo.
+ */
 @Entity
 @Table(name = "brands")
-@Data // Genera getters, setters, toString, equals, hashCode
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Brand {
@@ -23,18 +27,23 @@ public class Brand {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    // UniqueConstraint será manejado por el DDL generado o la base de datos.
+    // Nombre completo de la marca (Ej: "Hewlett-Packard")
+    @NotBlank(message = "El nombre de la marca es obligatorio")
+    @Column(unique = true, nullable = false)
+    @Size(max = 100)
     private String name;
 
-    // Código o abreviatura (Opcional, puede ser null)
+    // Código o abreviatura de la marca (Ej: "HP", "SAM"). Debe ser único.
+    @NotBlank(message = "El código de la marca es obligatorio")
+    @Column(unique = true, nullable = false, length = 20)
+    @Size(max = 20)
     private String code;
 
+    // URL del sitio web oficial de la marca (opcional)
+    @Size(max = 255)
     private String website;
 
-    // URL del logo para mostrar en el frontend
+    // URL del logo de la marca para mostrar en el frontend (opcional)
+    @Size(max = 255)
     private String logoUrl;
-
-    // NOTA: Para una validación estricta de 'code' y 'name' como UNIQUE,
-    // es mejor usar @Table(uniqueConstraints = {...}) si usas DDL
 }

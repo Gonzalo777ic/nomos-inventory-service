@@ -2,77 +2,83 @@ package com.nomos.inventory.service.controller;
 
 import com.nomos.inventory.service.model.Brand;
 import com.nomos.inventory.service.repository.BrandRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/brands")
-// Permite solicitudes del frontend (client)
-@CrossOrigin(origins = "http://localhost:5173", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
+@RequestMapping("/api/masters/brands")
+@RequiredArgsConstructor
 public class BrandController {
 
     private final BrandRepository brandRepository;
 
-    @Autowired
-    public BrandController(BrandRepository brandRepository) {
-        this.brandRepository = brandRepository;
-    }
-
-    // GET /api/brands - Obtener todas las marcas
+    // 1. GET (READ ALL)
     @GetMapping
-    public List<Brand> getAllBrands() {
-        return brandRepository.findAll();
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
+    public ResponseEntity<List<Brand>> getAllBrands() {
+        return ResponseEntity.ok(brandRepository.findAll());
     }
 
-    // GET /api/brands/{id} - Obtener marca por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Brand> getBrandById(@PathVariable Long id) {
-        Optional<Brand> brand = brandRepository.findById(id);
-        return brand.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // POST /api/brands - Crear una nueva marca
+    // 2. POST (CREATE)
     @PostMapping
-    public ResponseEntity<Brand> createBrand(@RequestBody Brand brand) {
-        // Validación básica (mejorar con Service Layer y validación de unicidad)
-        if (brand.getName() == null || brand.getName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> createBrand(@Valid @RequestBody Brand brand) {
+        if (brandRepository.existsByName(brand.getName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Ya existe una marca con el nombre '" + brand.getName() + "'.");
+        }
+        if (brandRepository.existsByCode(brand.getCode())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Ya existe una marca con el código '" + brand.getCode() + "'.");
         }
         Brand savedBrand = brandRepository.save(brand);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedBrand);
     }
 
-    // PUT /api/brands/{id} - Actualizar una marca existente
+    // 3. PUT (UPDATE)
     @PutMapping("/{id}")
-    public ResponseEntity<Brand> updateBrand(@PathVariable Long id, @RequestBody Brand brandDetails) {
-        Optional<Brand> brandOptional = brandRepository.findById(id);
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> updateBrand(@PathVariable Long id, @Valid @RequestBody Brand brandDetails) {
+        return brandRepository.findById(id).map(brand -> {
+            // Validar unicidad del nombre, excluyendo la propia marca
+            if (brandRepository.existsByNameAndIdNot(brandDetails.getName(), id)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Ya existe otra marca con el nombre '" + brandDetails.getName() + "'.");
+            }
+            // Validar unicidad del código, excluyendo la propia marca
+            if (brandRepository.existsByCodeAndIdNot(brandDetails.getCode(), id)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Ya existe otra marca con el código '" + brandDetails.getCode() + "'.");
+            }
 
-        if (brandOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+            brand.setName(brandDetails.getName());
+            brand.setCode(brandDetails.getCode());
+            brand.setWebsite(brandDetails.getWebsite());
+            brand.setLogoUrl(brandDetails.getLogoUrl());
 
-        Brand brand = brandOptional.get();
-        brand.setName(brandDetails.getName());
-        brand.setCode(brandDetails.getCode());
-        brand.setWebsite(brandDetails.getWebsite());
-        brand.setLogoUrl(brandDetails.getLogoUrl());
-
-        Brand updatedBrand = brandRepository.save(brand);
-        return ResponseEntity.ok(updatedBrand);
+            Brand updatedBrand = brandRepository.save(brand);
+            return ResponseEntity.ok(updatedBrand);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE /api/brands/{id} - Eliminar una marca
+    // 4. DELETE
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteBrand(@PathVariable Long id) {
-        if (!brandRepository.existsById(id)) {
+        if (brandRepository.existsById(id)) {
+            // Consideraciones para la eliminación:
+            // En un sistema real, se debe verificar si la marca está siendo utilizada por algún Producto
+            // antes de permitir la eliminación. Podría ser necesario ponerla inactiva o requerir que
+            // todos los productos asociados se reasignen a otra marca.
+            brandRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
             return ResponseEntity.notFound().build();
         }
-        brandRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 }

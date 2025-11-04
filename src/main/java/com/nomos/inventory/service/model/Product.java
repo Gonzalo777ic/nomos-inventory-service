@@ -1,5 +1,6 @@
 package com.nomos.inventory.service.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,7 +16,7 @@ import lombok.AllArgsConstructor;
 /**
  * Entidad maestra que define un Producto vendible o inventariable.
  * Contiene todas las claves foráneas a las tablas de apoyo (Maestros).
- * La propiedad imageUrl ha sido re-agregada.
+ * Nota: Se eliminó 'defaultSupplierId' para migrar a la tabla M:N ProductSupplier.
  */
 @Entity
 @Table(name = "products")
@@ -28,39 +29,42 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Código de Identificación Único del Producto (Stock Keeping Unit)
-    @NotBlank
+    // Código de Identificación Único del Producto (Stock Keeping Unit). DEBE SER ÚNICO.
+    @NotBlank(message = "El SKU es obligatorio")
+    @Column(unique = true, nullable = false)
     private String sku;
 
-    @NotBlank
+    @NotBlank(message = "El nombre del producto es obligatorio")
     private String name;
 
     // CLAVE FORÁNEA a Brand (Marca / Fabricante)
-    @NotNull
+    // FIX: Usamos @Column para mapear brandId a la columna 'brand' (sin _id) según el hint de la DB.
+    @NotNull(message = "La marca es obligatoria")
+    @Column(name = "brand", nullable = false)
     private Long brandId;
 
-    // Precio Base del Producto
-    @NotNull
-    @Min(0)
+    // Precio Base de Venta al cliente
+    @NotNull(message = "El precio es obligatorio")
+    @Min(value = 0, message = "El precio no puede ser negativo")
     private Double price;
 
-    // URL de la imagen del producto (re-agregado)
+    // URL de la imagen del producto
     private String imageUrl;
 
     // Nivel de stock mínimo para generar una alerta de reposición
-    @NotNull
-    @Min(0)
+    @NotNull(message = "El umbral de stock mínimo es obligatorio")
+    @Min(value = 0, message = "El umbral de stock mínimo no puede ser negativo")
     private Integer minStockThreshold;
 
     // CLAVE FORÁNEA a Category (Clasificación jerárquica)
-    @NotNull
+    // FIX: Usamos @Column para mapear categoryId a la columna 'category' (sin _id).
+    @NotNull(message = "La categoría es obligatoria")
+    @Column(name = "category", nullable = false)
     private Long categoryId;
 
-    // CLAVE FORÁNEA a Supplier (Proveedor preferido para la compra)
-    @NotNull
-    private Long defaultSupplierId;
-
     // CLAVE FORÁNEA a UnitOfMeasure (Unidad de medida de inventario/venta)
-    @NotNull
+    // FIX: Usamos @Column para mapear unitOfMeasureId a la columna 'unit_of_measure' (sin _id).
+    @NotNull(message = "La unidad de medida es obligatoria")
+    @Column(name = "unit_of_measure", nullable = false)
     private Long unitOfMeasureId;
 }
