@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import lombok.NoArgsConstructor; // 🔑 Añadido
+import lombok.AllArgsConstructor; // 🔑 Añadido
 
 /**
  * Entidad que registra mensajes informativos (anuncios, avisos de feriados, promociones)
@@ -15,6 +17,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "announcements")
 @Data
+@NoArgsConstructor // 🔑 Añadido
+@AllArgsConstructor // 🔑 Añadido
 public class Announcement {
 
     @Id
@@ -41,17 +45,20 @@ public class Announcement {
 
     private Boolean isActive; // Control para activar/desactivar sin cambiar fechas
 
-    // Constructor sin argumentos requerido por JPA
-    public Announcement() {
-        this.isActive = true;
-    }
+    // 🔑 El constructor sin argumentos manual ha sido ELIMINADO y reemplazado por @NoArgsConstructor
 
     /**
-     * Lógica de validación manual para asegurar que la fecha de inicio sea anterior a la de fin.
+     * Inicializa isActive a true antes de guardar y valida las fechas.
      */
     @PrePersist
     @PreUpdate
     private void validateDates() {
+        // Inicialización de valor por defecto
+        if (this.isActive == null) {
+            this.isActive = true;
+        }
+
+        // Validación de fechas
         if (startDate == null || endDate == null) {
             return; // La anotación @NotNull ya manejará esto
         }

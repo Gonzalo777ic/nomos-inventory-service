@@ -1,5 +1,6 @@
 package com.nomos.inventory.service.model;
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
@@ -23,9 +24,10 @@ public class PurchaseOrderDetail {
     @NotNull(message = "El ID de la Orden de Compra es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_order_id", nullable = false)
+    @JsonBackReference // ⭐ CORRECCIÓN: Ignora esta referencia para evitar el bucle.
     private PurchaseOrder purchaseOrder;
 
-    // FK a Product
+    // FK a Product (No necesita JsonIgnore si Product no referencia de vuelta a Detail)
     @NotNull(message = "El ID del Producto es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)

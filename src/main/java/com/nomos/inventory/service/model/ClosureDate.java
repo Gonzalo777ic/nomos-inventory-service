@@ -8,6 +8,8 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import lombok.NoArgsConstructor; // 🔑 Añadido
+import lombok.AllArgsConstructor; // 🔑 Añadido
 
 /**
  * Entidad que registra días festivos o cierres programados, alterando el StoreSchedule regular.
@@ -16,6 +18,8 @@ import java.time.LocalTime;
 @Table(name = "closure_dates",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"closureDate"})}) // Un solo evento por día
 @Data
+@NoArgsConstructor // 🔑 Añadido
+@AllArgsConstructor // 🔑 Añadido
 public class ClosureDate {
 
     @Id
@@ -36,8 +40,7 @@ public class ClosureDate {
     @Column(nullable = true)
     private LocalTime closingTime; // Hora de cierre, si isFullDay es false (cierre parcial).
 
-    // Constructor sin argumentos requerido por JPA
-    public ClosureDate() {}
+    // 🔑 El constructor sin argumentos manual ha sido ELIMINADO y reemplazado por @NoArgsConstructor
 
     /**
      * Lógica de validación manual para asegurar consistencia entre isFullDay y closingTime.
