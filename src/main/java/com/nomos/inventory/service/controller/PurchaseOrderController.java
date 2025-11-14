@@ -1,5 +1,5 @@
 package com.nomos.inventory.service.controller;
-
+import org.springframework.transaction.annotation.Transactional; // Importar Transactional
 import com.nomos.inventory.service.model.PurchaseOrder;
 import com.nomos.inventory.service.model.Supplier;
 import com.nomos.inventory.service.repository.PurchaseOrderRepository;
@@ -34,17 +34,20 @@ public class PurchaseOrderController {
      * GET /api/v1/purchase-orders : Obtener todas las órdenes de compra.
      */
     @GetMapping
+    @Transactional(readOnly = true)
     public ResponseEntity<List<PurchaseOrder>> getAllPurchaseOrders() {
-        List<PurchaseOrder> orders = purchaseOrderRepository.findAll();
+        // ⭐ USAR EL MÉTODO CORREGIDO
+        List<PurchaseOrder> orders = purchaseOrderRepository.findAllWithSupplierAndDetailsAndProducts();
         return ResponseEntity.ok(orders);
     }
-
     /**
      * GET /api/v1/purchase-orders/{id} : Obtener una orden de compra por su ID.
      */
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<PurchaseOrder> getPurchaseOrderById(@PathVariable Long id) {
-        PurchaseOrder order = purchaseOrderRepository.findById(id)
+        // ⭐ CORRECCIÓN CLAVE: Usar el método con FETCH JOIN para cargar Supplier y Details.
+        PurchaseOrder order = purchaseOrderRepository.findByIdWithDetailsAndSupplier(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Orden de Compra con ID " + id + " no encontrada")
                 );
@@ -56,6 +59,7 @@ public class PurchaseOrderController {
      * Requiere que el Supplier asociado exista.
      */
     @PostMapping
+    @Transactional // Añadir @Transactional aquí también para asegurar el guardado de detalles
     public ResponseEntity<PurchaseOrder> createPurchaseOrder(@Valid @RequestBody PurchaseOrder order) {
         // Validar que el proveedor (Supplier) exista antes de guardar la orden
         Long supplierId = order.getSupplier().getId();
@@ -65,6 +69,12 @@ public class PurchaseOrderController {
                 );
 
         order.setSupplier(supplier);
+
+        // ⭐ CORRECCIÓN: Asegurar la referencia bidireccional antes de guardar
+        if (order.getDetails() != null) {
+            order.getDetails().forEach(detail -> detail.setPurchaseOrder(order));
+        }
+
         PurchaseOrder createdOrder = purchaseOrderRepository.save(order);
         return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
     }
@@ -73,13 +83,14 @@ public class PurchaseOrderController {
      * PUT /api/v1/purchase-orders/{id} : Actualizar una orden de compra existente.
      */
     @PutMapping("/{id}")
+    @Transactional // IMPORTANTE: Necesitas @Transactional para que el EntityManager maneje la sincronización
     public ResponseEntity<PurchaseOrder> updatePurchaseOrder(@PathVariable Long id, @Valid @RequestBody PurchaseOrder orderDetails) {
-        PurchaseOrder existingOrder = purchaseOrderRepository.findById(id)
+        PurchaseOrder existingOrder = purchaseOrderRepository.findByIdWithDetailsAndSupplier(id) // Usar el fetch-join
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Orden de Compra con ID " + id + " no encontrada para actualizar")
                 );
 
-        // 1. Validar y actualizar el Supplier si cambia
+        // 1. Validar y actualizar el Supplier
         if (orderDetails.getSupplier() != null && !existingOrder.getSupplier().getId().equals(orderDetails.getSupplier().getId())) {
             Long newSupplierId = orderDetails.getSupplier().getId();
             Supplier newSupplier = supplierRepository.findById(newSupplierId)
@@ -87,23 +98,34 @@ public class PurchaseOrderController {
                             HttpStatus.BAD_REQUEST, "Nuevo Proveedor con ID " + newSupplierId + " no existe")
                     );
             existingOrder.setSupplier(newSupplier);
-        } else if (orderDetails.getSupplier() != null) {
-            // Asegura que el objeto Supplier referenciado sea la instancia gestionada por JPA,
-            // si el ID no ha cambiado pero el objeto Supplier fue pasado en el body.
-            existingOrder.setSupplier(supplierRepository.findById(existingOrder.getSupplier().getId()).get());
         }
+        // Si el proveedor no cambia, no necesitamos hacer nada más aquí, ya que 'existingOrder'
+        // ya tiene su Supplier gestionado (o si el frontend lo envía, JPA lo ignorará si el ID es el mismo)
 
-
-        // 2. Actualizar otros campos
+        // 2. Actualizar campos de la cabecera
         existingOrder.setOrderDate(orderDetails.getOrderDate());
         existingOrder.setDeliveryDate(orderDetails.getDeliveryDate());
         existingOrder.setTotalAmount(orderDetails.getTotalAmount());
         existingOrder.setStatus(orderDetails.getStatus());
 
+        // ⭐ 3. LÓGICA CRÍTICA DE ACTUALIZACIÓN DE DETALLES (Sincronización)
+
+        // a) Limpiar la lista existente (CASCADE y ORPHAN REMOVAL eliminarán los detalles viejos en DB)
+        // Esto solo funciona si `orphanRemoval = true` está en la entidad JPA.
+        existingOrder.getDetails().clear();
+
+        // b) Añadir los nuevos detalles y configurar la referencia bidireccional
+        if (orderDetails.getDetails() != null) {
+            orderDetails.getDetails().forEach(newDetail -> {
+                newDetail.setPurchaseOrder(existingOrder); // Establece la referencia al padre
+                existingOrder.getDetails().add(newDetail); // Añade al padre
+            });
+        }
+
+        // 4. Guardar (JPA detectará los cambios, eliminará los viejos, insertará los nuevos)
         PurchaseOrder updatedOrder = purchaseOrderRepository.save(existingOrder);
         return ResponseEntity.ok(updatedOrder);
     }
-
     /**
      * DELETE /api/v1/purchase-orders/{id} : Eliminar una orden de compra.
      */

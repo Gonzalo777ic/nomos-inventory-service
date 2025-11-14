@@ -9,7 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/inventory/product-suppliers")
@@ -17,6 +19,36 @@ import java.util.List;
 public class ProductSupplierController {
 
     private final ProductSupplierRepository psRepository;
+
+    // --- LÓGICA AUXILIAR DE NEGOCIO ---
+
+    /**
+     * Asegura que si se establece un nuevo proveedor como preferido (isPreferred=true),
+     * el proveedor preferido anterior para ese producto sea marcado como isPreferred=false.
+     * * NOTA: Este método ahora asume que será llamado desde un método que tiene @Transactional.
+     * @param productId ID del producto afectado.
+     * @param newPreferredSupplierId ID del proveedor que será el nuevo preferido.
+     */
+    private void enforceSinglePreferredSupplier(Long productId, Long newPreferredSupplierId) {
+        if (newPreferredSupplierId == null) {
+            return;
+        }
+
+        // 1. Buscar todos los proveedores preferidos existentes para el producto.
+        // Ahora el repositorio devuelve una lista (corregido).
+        List<ProductSupplier> existingPreferred = psRepository.findByProductIdAndIsPreferred(productId, true);
+
+        // 2. Desactivar todos los proveedores preferidos anteriores, excepto el nuevo.
+        for (ProductSupplier ps : existingPreferred) {
+            // Desactivar SOLAMENTE si no es el mismo que se va a activar
+            if (!ps.getSupplierId().equals(newPreferredSupplierId)) {
+                ps.setIsPreferred(false);
+                psRepository.save(ps);
+            }
+        }
+    }
+
+    // --- ENDPOINTS ---
 
     // 1. GET ALL by Product (La consulta más común)
     @GetMapping("/product/{productId}")
@@ -29,13 +61,13 @@ public class ProductSupplierController {
     // 2. POST (CREATE) - Añadir un proveedor a un producto
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Transactional // 👈 Mantenemos la transacción en el método público
     public ResponseEntity<?> addProductSupplier(@Valid @RequestBody ProductSupplier relation) {
 
-        ProductSupplierId id = new ProductSupplierId(relation.getProductId(), relation.getSupplierId());
-
-        // No se necesita verificar la existencia aquí, el repositorio JPA se encargará de la PK.
-        // Si ya existe, lanzará una excepción, la cual debe ser manejada con un @ControllerAdvice
-        // (que se implementará más adelante), pero por ahora, Spring lo maneja por defecto.
+        // 🎯 Lógica de unicidad para 'isPreferred'
+        if (Boolean.TRUE.equals(relation.getIsPreferred())) {
+            enforceSinglePreferredSupplier(relation.getProductId(), relation.getSupplierId());
+        }
 
         ProductSupplier savedRelation = psRepository.save(relation);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRelation);
@@ -44,6 +76,7 @@ public class ProductSupplierController {
     // 3. PUT (UPDATE) - Actualizar los detalles de la relación
     @PutMapping("/{productId}/{supplierId}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Transactional // 👈 Mantenemos la transacción en el método público
     public ResponseEntity<ProductSupplier> updateProductSupplier(
             @PathVariable Long productId,
             @PathVariable Long supplierId,
@@ -53,11 +86,19 @@ public class ProductSupplierController {
 
         return psRepository.findById(id).map(relation -> {
 
-            // Actualizar solo los campos que pertenecen a la relación
+            // 1. Guardar el estado de preferencia de la request
+            boolean newIsPreferred = Boolean.TRUE.equals(relationDetails.getIsPreferred());
+
+            // 2. Si la nueva relación quiere ser la preferida, forzamos la unicidad
+            if (newIsPreferred) {
+                enforceSinglePreferredSupplier(productId, supplierId);
+            }
+
+            // 3. Actualizar el resto de campos
             relation.setSupplierProductCode(relationDetails.getSupplierProductCode());
             relation.setUnitCost(relationDetails.getUnitCost());
             relation.setLeadTimeDays(relationDetails.getLeadTimeDays());
-            relation.setIsPreferred(relationDetails.getIsPreferred());
+            relation.setIsPreferred(newIsPreferred);
             relation.setIsActive(relationDetails.getIsActive());
 
             ProductSupplier updatedRelation = psRepository.save(relation);

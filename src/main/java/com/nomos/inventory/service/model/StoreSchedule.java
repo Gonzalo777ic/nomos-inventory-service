@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalTime;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 /**
  * Entidad que define el horario de atención semanal regular de la tienda.
@@ -13,6 +15,8 @@ import java.time.LocalTime;
 @Table(name = "store_schedules",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"dayOfWeek"})}) // Un horario por día
 @Data
+@NoArgsConstructor // Lombok genera el constructor sin args
+@AllArgsConstructor // 🔑 Añadido para el DataLoader
 public class StoreSchedule {
 
     @Id
@@ -33,8 +37,16 @@ public class StoreSchedule {
     @NotNull(message = "Indicar si está abierto es obligatorio")
     private Boolean isOpen;
 
-    // Constructor sin argumentos requerido por JPA
-    public StoreSchedule() {
-        this.isOpen = true; // Por defecto, se asume que está abierto si se define un horario
+    // NOTA: El constructor sin argumentos manual ha sido ELIMINADO.
+    // Ahora puedes usar el método @PrePersist para la inicialización.
+
+    /**
+     * Inicializa isOpen a true antes de guardar.
+     */
+    @PrePersist
+    public void initializeIsOpen() {
+        if (this.isOpen == null) {
+            this.isOpen = true; // Por defecto, se asume que está abierto si se define un horario
+        }
     }
 }
