@@ -20,14 +20,12 @@ public class PurchaseOrderDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // FK a PurchaseOrder
     @NotNull(message = "El ID de la Orden de Compra es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_order_id", nullable = false)
     @JsonBackReference // ⭐ CORRECCIÓN: Ignora esta referencia para evitar el bucle.
     private PurchaseOrder purchaseOrder;
 
-    // FK a Product (No necesita JsonIgnore si Product no referencia de vuelta a Detail)
     @NotNull(message = "El ID del Producto es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
@@ -41,6 +39,5 @@ public class PurchaseOrderDetail {
     @DecimalMin(value = "0.0", inclusive = false, message = "El costo unitario debe ser mayor a cero")
     private Double unitCost;
 
-    // Constructor sin argumentos requerido por JPA
     public PurchaseOrderDetail() {}
 }

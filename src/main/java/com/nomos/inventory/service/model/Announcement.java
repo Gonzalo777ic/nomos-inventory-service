@@ -45,7 +45,6 @@ public class Announcement {
 
     private Boolean isActive; // Control para activar/desactivar sin cambiar fechas
 
-    // 🔑 El constructor sin argumentos manual ha sido ELIMINADO y reemplazado por @NoArgsConstructor
 
     /**
      * Inicializa isActive a true antes de guardar y valida las fechas.
@@ -53,12 +52,11 @@ public class Announcement {
     @PrePersist
     @PreUpdate
     private void validateDates() {
-        // Inicialización de valor por defecto
+
         if (this.isActive == null) {
             this.isActive = true;
         }
 
-        // Validación de fechas
         if (startDate == null || endDate == null) {
             return; // La anotación @NotNull ya manejará esto
         }

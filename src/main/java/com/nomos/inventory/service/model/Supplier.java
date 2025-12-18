@@ -25,7 +25,6 @@ public class Supplier {
     @Column(nullable = false)
     private String name;
 
-    // Identificación fiscal/RUC/NIT. CLAVE ÚNICA para evitar duplicados.
     @Column(unique = true, nullable = false)
     @NotBlank(message = "La identificación fiscal (taxId) es obligatoria")
     private String taxId;

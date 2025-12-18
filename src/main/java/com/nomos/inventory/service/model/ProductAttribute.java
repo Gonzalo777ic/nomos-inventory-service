@@ -22,14 +22,11 @@ public class ProductAttribute {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Nombre del atributo (Ej: "Color", "Talla", "Material"). Debe ser único.
     @NotBlank(message = "El nombre del atributo es obligatorio")
     @Column(unique = true, nullable = false)
     private String name;
 
-    // Tipo de dato esperado para el valor (Ej: "STRING", "NUMBER", "BOOLEAN", etc.)
     @NotBlank(message = "El tipo de dato es obligatorio")
     private String dataType;
 
-    // TODO: Considerar añadir una restricción de lista de valores permitidos (Enum o JSON/String)
 }

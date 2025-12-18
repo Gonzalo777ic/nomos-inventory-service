@@ -27,6 +27,6 @@ public interface ProductSupplierRepository extends JpaRepository<ProductSupplier
      * @param isPreferred Debe ser 'true'.
      * @return Lista de relaciones ProductSupplier.
      */
-    // Se cambia a List<> para que el Controller pueda manejar la lógica de desactivación
+
     List<ProductSupplier> findByProductIdAndIsPreferred(Long productId, Boolean isPreferred);
 }

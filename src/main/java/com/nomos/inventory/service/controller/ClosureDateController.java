@@ -53,15 +53,15 @@ public class ClosureDateController {
     @PostMapping
     public ResponseEntity<ClosureDate> createClosureDate(@Valid @RequestBody ClosureDate closure) {
         try {
-            // La validación de lógica (isFullDay vs closingTime) se realiza en @PrePersist/@PreUpdate del modelo.
-            // La validación de unicidad por fecha se maneja por la constraint en la tabla y JPA.
+
+
             ClosureDate createdClosure = closureDateRepository.save(closure);
             return new ResponseEntity<>(createdClosure, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            // Capturar la excepción de validación de lógica del modelo
+
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            // Capturar errores de unicidad de fecha
+
             if (e.getMessage() != null && e.getMessage().contains("ConstraintViolationException")) {
                 throw new ResponseStatusException(
                         HttpStatus.CONFLICT, "Ya existe un cierre programado para esta fecha."
@@ -87,14 +87,13 @@ public class ClosureDateController {
             existingClosure.setIsFullDay(closureDetails.getIsFullDay());
             existingClosure.setClosingTime(closureDetails.getClosingTime());
 
-            // La validación de lógica se ejecuta automáticamente antes de la actualización
             ClosureDate updatedClosure = closureDateRepository.save(existingClosure);
             return ResponseEntity.ok(updatedClosure);
         } catch (IllegalArgumentException e) {
-            // Capturar la excepción de validación de lógica del modelo
+
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            // Capturar errores de unicidad de fecha si se intenta cambiar la fecha a una ya existente
+
             if (e.getMessage() != null && e.getMessage().contains("ConstraintViolationException")) {
                 throw new ResponseStatusException(
                         HttpStatus.CONFLICT, "Ya existe un cierre programado para la nueva fecha especificada."

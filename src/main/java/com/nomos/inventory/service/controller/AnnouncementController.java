@@ -44,7 +44,7 @@ public class AnnouncementController {
     @GetMapping("/active")
     public ResponseEntity<List<Announcement>> getActiveAnnouncements() {
         LocalDateTime now = LocalDateTime.now();
-        // Usamos el mismo 'now' para before y after para encontrar anuncios cuya vigencia cubre el momento actual
+
         List<Announcement> activeAnnouncements = announcementRepository
                 .findByIsActiveTrueAndStartDateBeforeAndEndDateAfter(now, now);
         return ResponseEntity.ok(activeAnnouncements);
@@ -71,7 +71,7 @@ public class AnnouncementController {
             Announcement createdAnnouncement = announcementRepository.save(announcement);
             return new ResponseEntity<>(createdAnnouncement, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            // Capturar la excepción de validación de lógica (startDate vs endDate)
+
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
@@ -87,7 +87,7 @@ public class AnnouncementController {
                 );
 
         try {
-            // Actualizar campos
+
             existingAnnouncement.setTitle(announcementDetails.getTitle());
             existingAnnouncement.setContent(announcementDetails.getContent());
             existingAnnouncement.setStartDate(announcementDetails.getStartDate());
@@ -95,11 +95,10 @@ public class AnnouncementController {
             existingAnnouncement.setType(announcementDetails.getType());
             existingAnnouncement.setIsActive(announcementDetails.getIsActive());
 
-            // La validación de lógica se ejecuta automáticamente antes de la actualización
             Announcement updatedAnnouncement = announcementRepository.save(existingAnnouncement);
             return ResponseEntity.ok(updatedAnnouncement);
         } catch (IllegalArgumentException e) {
-            // Capturar la excepción de validación de lógica (startDate vs endDate)
+
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }

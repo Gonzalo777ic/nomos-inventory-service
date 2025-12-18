@@ -27,23 +27,19 @@ public class Brand {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Nombre completo de la marca (Ej: "Hewlett-Packard")
     @NotBlank(message = "El nombre de la marca es obligatorio")
     @Column(unique = true, nullable = false)
     @Size(max = 100)
     private String name;
 
-    // Código o abreviatura de la marca (Ej: "HP", "SAM"). Debe ser único.
     @NotBlank(message = "El código de la marca es obligatorio")
     @Column(unique = true, nullable = false, length = 20)
     @Size(max = 20)
     private String code;
 
-    // URL del sitio web oficial de la marca (opcional)
     @Size(max = 255)
     private String website;
 
-    // URL del logo de la marca para mostrar en el frontend (opcional)
     @Size(max = 255)
     private String logoUrl;
 }

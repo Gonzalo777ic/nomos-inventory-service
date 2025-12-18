@@ -40,7 +40,6 @@ public class ClosureDate {
     @Column(nullable = true)
     private LocalTime closingTime; // Hora de cierre, si isFullDay es false (cierre parcial).
 
-    // 🔑 El constructor sin argumentos manual ha sido ELIMINADO y reemplazado por @NoArgsConstructor
 
     /**
      * Lógica de validación manual para asegurar consistencia entre isFullDay y closingTime.
@@ -52,7 +51,7 @@ public class ClosureDate {
             throw new IllegalArgumentException("Si el cierre no es de día completo (isFullDay=false), 'closingTime' debe estar especificado.");
         }
         if (isFullDay && closingTime != null) {
-            // Limpiamos la hora si es cierre de día completo para mantener la consistencia en la BD
+
             closingTime = null;
         }
     }

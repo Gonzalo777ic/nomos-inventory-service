@@ -22,16 +22,13 @@ public class Warehouse {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Nombre descriptivo del almacén (Ej: "Almacén Principal", "Tienda Sur"). Debe ser único.
     @NotBlank(message = "El nombre del almacén es obligatorio")
     @Column(unique = true, nullable = false)
     private String name;
 
-    // Dirección o ubicación física del almacén
     @NotBlank(message = "La dirección de la ubicación es obligatoria")
     private String locationAddress;
 
-    // Indicador si este es el almacén principal. Solo debe haber uno marcado como true.
     @NotNull(message = "Debe indicarse si es el almacén principal")
     private Boolean isMain = false;
 }

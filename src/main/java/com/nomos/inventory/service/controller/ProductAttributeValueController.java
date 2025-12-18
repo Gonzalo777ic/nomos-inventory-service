@@ -18,7 +18,6 @@ public class ProductAttributeValueController {
 
     private final ProductAttributeValueRepository pavRepository;
 
-    // 1. GET ALL by Product (Lo más común es obtener los atributos de un producto)
     @GetMapping("/product/{productId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
     public ResponseEntity<List<ProductAttributeValue>> getAttributeValuesByProduct(@PathVariable Long productId) {
@@ -26,24 +25,21 @@ public class ProductAttributeValueController {
         return ResponseEntity.ok(values);
     }
 
-    // 2. GET ONE by Product and Attribute (Obtener un atributo específico de un producto)
     @GetMapping("/product/{productId}/attribute/{attributeId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
     public ResponseEntity<List<ProductAttributeValue>> getAttributeValueByProductAndAttribute(
             @PathVariable Long productId,
             @PathVariable Long attributeId) {
         List<ProductAttributeValue> values = pavRepository.findByProductIdAndAttributeId(productId, attributeId);
-        // Retornamos una lista ya que podrías permitir múltiples valores para un mismo atributo si el diseño lo cambiara,
-        // pero con la uniqueConstraint actual solo habrá 0 o 1 elemento.
+
+
         return ResponseEntity.ok(values);
     }
 
-    // 3. POST (CREATE) - Añadir un valor de atributo a un producto
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> addProductAttributeValue(@Valid @RequestBody ProductAttributeValue attributeValue) {
 
-        // Verifica si ya existe un valor para este producto y atributo
         ProductAttributeValueId id = new ProductAttributeValueId(attributeValue.getProductId(), attributeValue.getAttributeId());
         if (pavRepository.existsById(id)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -55,7 +51,6 @@ public class ProductAttributeValueController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedAttributeValue);
     }
 
-    // 4. PUT (UPDATE) - Actualizar el valor de un atributo para un producto
     @PutMapping("/{productId}/{attributeId}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ProductAttributeValue> updateProductAttributeValue(
@@ -72,7 +67,6 @@ public class ProductAttributeValueController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // 5. DELETE (DELETE) - Eliminar un valor de atributo de un producto
     @DeleteMapping("/{productId}/{attributeId}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteProductAttributeValue(

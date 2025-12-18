@@ -55,7 +55,7 @@ public class StoreScheduleController {
      */
     @PostMapping
     public ResponseEntity<StoreSchedule> createSchedule(@Valid @RequestBody StoreSchedule schedule) {
-        // Validar unicidad del día de la semana
+
         if (scheduleRepository.findByDayOfWeek(schedule.getDayOfWeek()).isPresent()) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT, "Ya existe un horario definido para el día " + schedule.getDayOfWeek()
@@ -76,7 +76,6 @@ public class StoreScheduleController {
                         HttpStatus.NOT_FOUND, "Horario con ID " + id + " no encontrado para actualizar")
                 );
 
-        // Si se intenta cambiar el día de la semana, validar unicidad
         if (!existingSchedule.getDayOfWeek().equals(scheduleDetails.getDayOfWeek())) {
             if (scheduleRepository.findByDayOfWeek(scheduleDetails.getDayOfWeek()).isPresent()) {
                 throw new ResponseStatusException(

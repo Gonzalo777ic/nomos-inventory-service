@@ -8,6 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface ProductAttributeRepository extends JpaRepository<ProductAttribute, Long> {
 
-    // Método auxiliar para verificar la unicidad por nombre
     boolean existsByName(String name);
 }

@@ -37,8 +37,7 @@ public class StoreSchedule {
     @NotNull(message = "Indicar si está abierto es obligatorio")
     private Boolean isOpen;
 
-    // NOTA: El constructor sin argumentos manual ha sido ELIMINADO.
-    // Ahora puedes usar el método @PrePersist para la inicialización.
+
 
     /**
      * Inicializa isOpen a true antes de guardar.
