@@ -8,10 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.io.Serializable;
 
-/**
- * Entidad de Relación M:N entre Product y Supplier.
- * Almacena atributos específicos del vínculo entre un Producto y un Proveedor.
- */
+
 @Entity
 @Table(name = "product_suppliers",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"productId", "supplierId"})})
@@ -21,10 +18,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class ProductSupplier {
 
-    /**
-     * Clase de ID Compuesto para ProductSupplier (productId, supplierId).
-     * Debe ser public static para que sea accesible por JPA/Hibernate y el repositorio.
-     */
+    
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

@@ -10,10 +10,7 @@ import java.time.LocalDateTime;
 import lombok.NoArgsConstructor; 
 import lombok.AllArgsConstructor; 
 
-/**
- * Entidad que registra mensajes informativos (anuncios, avisos de feriados, promociones)
- * para ser mostrados en la tienda online.
- */
+
 @Entity
 @Table(name = "announcements")
 @Data
@@ -46,9 +43,7 @@ public class Announcement {
     private Boolean isActive; 
 
 
-    /**
-     * Inicializa isActive a true antes de guardar y valida las fechas.
-     */
+    
     @PrePersist
     @PreUpdate
     private void validateDates() {

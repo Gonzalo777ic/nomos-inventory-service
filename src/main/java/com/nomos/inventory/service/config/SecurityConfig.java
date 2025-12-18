@@ -26,7 +26,7 @@ public class SecurityConfig {
     private static final String ROLES_CLAIM = "https://nomosstore.com/roles";
 
     /**
-     * 🛑 SOLUCIÓN CRÍTICA: Ignora completamente la ruta de imágenes
+     * SOLUCIÓN CRÍTICA: Ignora completamente la ruta de imágenes
      * antes de que se ejecuten los filtros de seguridad.
      */
     @Bean

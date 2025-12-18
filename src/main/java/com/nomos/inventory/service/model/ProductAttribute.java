@@ -7,10 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-/**
- * Entidad Maestra: Define un tipo de atributo variable (Ej: Color, Talla, Sabor).
- * Este atributo luego se vincula a un Producto con un valor específico.
- */
+
 @Entity
 @Table(name = "product_attributes")
 @Data

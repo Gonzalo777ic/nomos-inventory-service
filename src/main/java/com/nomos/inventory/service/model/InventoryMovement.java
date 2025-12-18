@@ -7,9 +7,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-/**
- * Entidad que registra la trazabilidad histórica de los cambios de stock.
- */
+
 @Entity
 @Data
 public class InventoryMovement {

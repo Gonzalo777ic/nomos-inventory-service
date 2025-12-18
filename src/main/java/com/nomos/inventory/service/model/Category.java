@@ -7,10 +7,7 @@ import lombok.AllArgsConstructor;
 import jakarta.validation.constraints.NotBlank;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/**
- * Entidad de Catálogo: Clasificación jerárquica de productos.
- * Utiliza recursividad (parent) para crear subcategorías.
- */
+
 @Entity
 @Table(name = "categories")
 @Data

@@ -12,9 +12,7 @@ import java.time.LocalDate;
 import java.util.ArrayList; 
 import java.util.List;
 
-/**
- * Entidad que representa la Orden de Compra (Pedido) a un proveedor.
- */
+
 @Entity
 @Data
 public class PurchaseOrder {

@@ -8,9 +8,7 @@ import java.time.LocalTime;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-/**
- * Entidad que define el horario de atención semanal regular de la tienda.
- */
+
 @Entity
 @Table(name = "store_schedules",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"dayOfWeek"})}) 
@@ -39,9 +37,7 @@ public class StoreSchedule {
 
 
 
-    /**
-     * Inicializa isOpen a true antes de guardar.
-     */
+    
     @PrePersist
     public void initializeIsOpen() {
         if (this.isOpen == null) {
