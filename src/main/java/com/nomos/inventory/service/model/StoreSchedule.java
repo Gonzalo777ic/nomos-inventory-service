@@ -13,10 +13,10 @@ import lombok.AllArgsConstructor;
  */
 @Entity
 @Table(name = "store_schedules",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"dayOfWeek"})}) // Un horario por día
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"dayOfWeek"})}) 
 @Data
-@NoArgsConstructor // Lombok genera el constructor sin args
-@AllArgsConstructor // 🔑 Añadido para el DataLoader
+@NoArgsConstructor 
+@AllArgsConstructor 
 public class StoreSchedule {
 
     @Id
@@ -25,7 +25,7 @@ public class StoreSchedule {
 
     @NotNull(message = "El día de la semana es obligatorio")
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true) // Asegura que solo haya una entrada por día
+    @Column(nullable = false, unique = true) 
     private DayOfWeek dayOfWeek;
 
     @NotNull(message = "La hora de apertura es obligatoria")
@@ -45,7 +45,7 @@ public class StoreSchedule {
     @PrePersist
     public void initializeIsOpen() {
         if (this.isOpen == null) {
-            this.isOpen = true; // Por defecto, se asume que está abierto si se define un horario
+            this.isOpen = true; 
         }
     }
 }

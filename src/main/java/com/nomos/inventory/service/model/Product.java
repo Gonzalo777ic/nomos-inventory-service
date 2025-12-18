@@ -55,13 +55,13 @@ public class Product {
     @Transient
     private String imageUrl;
 
-    @Transient // Evita que se mapee a la columna de la DB
+    @Transient 
     private String brandName;
 
-    @Transient // Evita que se mapee a la columna de la DB
+    @Transient 
     private String categoryName;
 
-    @Transient // Evita que se mapee a la columna de la DB
+    @Transient 
     private String unitOfMeasureName;
 
     @Transient

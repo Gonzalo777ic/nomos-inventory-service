@@ -21,7 +21,7 @@ public class InventoryMovement {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_item_id")
-    private InventoryItem inventoryItem; // Asumiendo InventoryItem existe
+    private InventoryItem inventoryItem; 
 
     @NotNull(message = "El producto es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,11 +29,11 @@ public class InventoryMovement {
     private Product product;
 
     @NotNull(message = "El cambio de cantidad es obligatorio")
-    private Integer quantityChange; // Puede ser positivo (entrada) o negativo (salida)
+    private Integer quantityChange; 
 
     @NotNull(message = "El tipo de movimiento es obligatorio")
     @Enumerated(EnumType.STRING)
-    private MovementType type; // ENTRADA, SALIDA, TRASPASO
+    private MovementType type; 
 
     @NotNull(message = "La razón del movimiento es obligatoria")
     private String reason;
@@ -44,7 +44,7 @@ public class InventoryMovement {
 
     private Long referenceId;
 
-    private String referenceService; // Ej: "PurchaseOrder", "SalesInvoice", "StockAdjustment"
+    private String referenceService; 
 
     public InventoryMovement() {}
 }

@@ -10,5 +10,5 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
 
 
-    Optional<Category> findByName(String name); // Necesario para DataLoader
+    Optional<Category> findByName(String name); 
 }

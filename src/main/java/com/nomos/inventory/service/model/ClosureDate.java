@@ -8,18 +8,18 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import lombok.NoArgsConstructor; // 🔑 Añadido
-import lombok.AllArgsConstructor; // 🔑 Añadido
+import lombok.NoArgsConstructor; 
+import lombok.AllArgsConstructor; 
 
 /**
  * Entidad que registra días festivos o cierres programados, alterando el StoreSchedule regular.
  */
 @Entity
 @Table(name = "closure_dates",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"closureDate"})}) // Un solo evento por día
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"closureDate"})}) 
 @Data
-@NoArgsConstructor // 🔑 Añadido
-@AllArgsConstructor // 🔑 Añadido
+@NoArgsConstructor 
+@AllArgsConstructor 
 public class ClosureDate {
 
     @Id
@@ -32,13 +32,13 @@ public class ClosureDate {
     private LocalDate closureDate;
 
     @NotBlank(message = "La razón del cierre es obligatoria")
-    private String reason; // Ej: Feriado, Inventario Anual
+    private String reason; 
 
     @NotNull(message = "Indicar si es cierre de día completo es obligatorio")
-    private Boolean isFullDay; // Si es true, el cierre aplica a todo el día.
+    private Boolean isFullDay; 
 
     @Column(nullable = true)
-    private LocalTime closingTime; // Hora de cierre, si isFullDay es false (cierre parcial).
+    private LocalTime closingTime; 
 
 
     /**

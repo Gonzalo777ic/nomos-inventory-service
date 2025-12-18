@@ -55,7 +55,7 @@ public class ProductSupplierController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @Transactional // 👈 Mantenemos la transacción en el método público
+    @Transactional 
     public ResponseEntity<?> addProductSupplier(@Valid @RequestBody ProductSupplier relation) {
 
         if (Boolean.TRUE.equals(relation.getIsPreferred())) {
@@ -68,7 +68,7 @@ public class ProductSupplierController {
 
     @PutMapping("/{productId}/{supplierId}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @Transactional // 👈 Mantenemos la transacción en el método público
+    @Transactional 
     public ResponseEntity<ProductSupplier> updateProductSupplier(
             @PathVariable Long productId,
             @PathVariable Long supplierId,

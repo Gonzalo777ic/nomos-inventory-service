@@ -63,7 +63,7 @@ public class DataLoader implements CommandLineRunner {
                     new UnitOfMeasure(null, "Kilogramo", "Kg"),
                     new UnitOfMeasure(null, "Litro", "Lt"),
                     new UnitOfMeasure(null, "Paquete", "Pqt"),
-                    new UnitOfMeasure(null, "Metro", "M") // Añadida para el cable
+                    new UnitOfMeasure(null, "Metro", "M") 
             ));
         }
     }
@@ -74,7 +74,7 @@ public class DataLoader implements CommandLineRunner {
                     new Brand(null, "Intel Corporation", "INT", "https://intel.com", "url/logo/intel.png"),
                     new Brand(null, "Samsung Electronics", "SAM", "https://samsung.com", "url/logo/samsung.png"),
                     new Brand(null, "Logitech", "LOG", "https://logitech.com", "url/logo/logitech.png"),
-                    new Brand(null, "Generic Network", "GEN", "https://generic.net", "url/logo/generic.png") // Nueva marca
+                    new Brand(null, "Generic Network", "GEN", "https://generic.net", "url/logo/generic.png") 
             ));
         }
     }
@@ -84,7 +84,7 @@ public class DataLoader implements CommandLineRunner {
 
             Category electronica = categoryRepository.save(new Category(null, "Electrónica", "Dispositivos electrónicos de consumo.", null));
             Category computadoras = categoryRepository.save(new Category(null, "Computadoras", "Equipo de procesamiento y software.", null));
-            Category red = categoryRepository.save(new Category(null, "Redes", "Componentes y cableado de red.", electronica)); // Nueva Categoría
+            Category red = categoryRepository.save(new Category(null, "Redes", "Componentes y cableado de red.", electronica)); 
 
             categoryRepository.save(new Category(null, "Portátiles", "Laptops y ultrabooks.", computadoras));
             categoryRepository.save(new Category(null, "Monitores", "Dispositivos de visualización.", electronica));
@@ -97,7 +97,7 @@ public class DataLoader implements CommandLineRunner {
             supplierRepository.saveAll(Arrays.asList(
                     new Supplier(null, "Tech Global Distributors S.A.", "20512345678", "contacto@techglobal.com", "987654321", "Av. Central 123", "Javier Pérez"),
                     new Supplier(null, "Componentes Rápidos SAC", "20498765432", "ventas@rapidos.com", "912345678", "Calle Falsa 45", "Luisa Gómez"),
-                    new Supplier(null, "Insumos Eléctricos del Norte", "20555555555", "norte@insumos.com", "999888777", "Jr. Trujillo 200", "Carlos Ruiz") // Tercer proveedor
+                    new Supplier(null, "Insumos Eléctricos del Norte", "20555555555", "norte@insumos.com", "999888777", "Jr. Trujillo 200", "Carlos Ruiz") 
             ));
         }
     }
@@ -131,9 +131,9 @@ public class DataLoader implements CommandLineRunner {
                     new ProductImage(null, p3.getId(), "https://media.falabella.com/falabellaPE/117697871_01/w=1500,h=1500,fit=pad", true, 0, null)
             ));
 
-            Supplier supplier1 = supplierRepository.findByTaxId("20512345678").orElseThrow(); // Tech Global
-            Supplier supplier2 = supplierRepository.findByTaxId("20498765432").orElseThrow(); // Componentes Rápidos
-            Supplier supplier3 = supplierRepository.findByTaxId("20555555555").orElseThrow(); // Insumos Norte
+            Supplier supplier1 = supplierRepository.findByTaxId("20512345678").orElseThrow(); 
+            Supplier supplier2 = supplierRepository.findByTaxId("20498765432").orElseThrow(); 
+            Supplier supplier3 = supplierRepository.findByTaxId("20555555555").orElseThrow(); 
 
 
             productSupplierRepository.save(new ProductSupplier(p1.getId(), supplier1.getId(), "ITL-LP-22", 950.00, 7, true, true));
@@ -186,7 +186,7 @@ public class DataLoader implements CommandLineRunner {
                     new StoreSchedule(null, DayOfWeek.JUEVES, LocalTime.of(9, 0), LocalTime.of(18, 0), true),
                     new StoreSchedule(null, DayOfWeek.VIERNES, LocalTime.of(9, 0), LocalTime.of(18, 0), true),
                     new StoreSchedule(null, DayOfWeek.SABADO, LocalTime.of(9, 0), LocalTime.of(13, 0), true),
-                    new StoreSchedule(null, DayOfWeek.DOMINGO, LocalTime.of(0, 0), LocalTime.of(0, 0), false) // Cerrado
+                    new StoreSchedule(null, DayOfWeek.DOMINGO, LocalTime.of(0, 0), LocalTime.of(0, 0), false) 
             ));
         }
     }
@@ -202,7 +202,7 @@ public class DataLoader implements CommandLineRunner {
         if (closureDateRepository.count() == 0) {
             closureDateRepository.saveAll(Arrays.asList(
                     new ClosureDate(null, LocalDate.now().plusDays(15), "Feriado Nacional", true, null),
-                    new ClosureDate(null, LocalDate.now().plusDays(30), "Inventario Parcial", false, LocalTime.of(14, 0)) // Cierra a las 2 PM
+                    new ClosureDate(null, LocalDate.now().plusDays(30), "Inventario Parcial", false, LocalTime.of(14, 0)) 
             ));
         }
     }

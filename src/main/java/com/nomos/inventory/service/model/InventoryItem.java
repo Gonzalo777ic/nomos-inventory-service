@@ -53,7 +53,7 @@ public class InventoryItem {
     @Column(nullable = false)
     private String lotNumber;
 
-    private LocalDate expirationDate; // Fecha de Vencimiento
+    private LocalDate expirationDate; 
 
     private String location;
 

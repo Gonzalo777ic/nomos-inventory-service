@@ -137,7 +137,7 @@ public class ProductImageController {
 
         ProductImage newImage = new ProductImage();
         newImage.setProductId(productId);
-        newImage.setImageUrl(imageUrl); // 🔑 Ahora contiene la URL completa (http://...)
+        newImage.setImageUrl(imageUrl); 
         newImage.setSortOrder(99);
 
         long imageCount = imageRepository.countByProductId(productId);
@@ -149,11 +149,11 @@ public class ProductImageController {
             imageRepository.findByProductIdAndIsMain(productId, true)
                     .ifPresent(mainImg -> {
                         mainImg.setIsMain(false);
-                        imageRepository.save(mainImg); // Guarda el cambio: isMain = false
+                        imageRepository.save(mainImg); 
                     });
         }
 
-        ProductImage savedImage = imageRepository.save(newImage); // Guarda la nueva imagen
+        ProductImage savedImage = imageRepository.save(newImage); 
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedImage);
     }

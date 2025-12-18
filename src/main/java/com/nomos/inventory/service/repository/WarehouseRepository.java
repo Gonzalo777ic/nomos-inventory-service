@@ -11,7 +11,7 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
 
     Optional<Warehouse> findByIsMainTrue();
 
-    Optional<Warehouse> findByName(String name); // Necesario para DataLoader
+    Optional<Warehouse> findByName(String name); 
 
     boolean existsByName(String name);
 }

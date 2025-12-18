@@ -1,6 +1,6 @@
 package com.nomos.inventory.service.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore; // Importación necesaria
+import com.fasterxml.jackson.annotation.JsonIgnore; 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -9,7 +9,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.ArrayList; // Importación para inicializar la lista
+import java.util.ArrayList; 
 import java.util.List;
 
 /**
@@ -26,7 +26,7 @@ public class PurchaseOrder {
     @NotNull(message = "El proveedor es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
-    private Supplier supplier; // Aquí no ponemos @JsonIgnore, ya que es ManyToOne y no causa bucle, pero podría causar LIE.
+    private Supplier supplier; 
 
     @NotNull(message = "La fecha de la orden es obligatoria")
     @PastOrPresent(message = "La fecha de la orden no puede ser futura")
@@ -44,7 +44,7 @@ public class PurchaseOrder {
 
 
     @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference // ⭐ CORRECCIÓN: Permite la lectura y ESCRITURA (POST/PUT) del array 'details'.
+    @JsonManagedReference 
     private List<PurchaseOrderDetail> details = new ArrayList<>();
 
     public PurchaseOrder() {

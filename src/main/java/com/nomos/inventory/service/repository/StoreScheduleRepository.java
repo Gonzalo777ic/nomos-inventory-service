@@ -1,7 +1,7 @@
 package com.nomos.inventory.service.repository;
 
 import com.nomos.inventory.service.model.StoreSchedule;
-import com.nomos.inventory.service.model.DayOfWeek; // Importar el enum
+import com.nomos.inventory.service.model.DayOfWeek; 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

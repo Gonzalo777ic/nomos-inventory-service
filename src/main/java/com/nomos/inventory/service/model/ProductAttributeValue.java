@@ -15,8 +15,8 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "product_attribute_values",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"productId", "attributeId"})}) // Un mismo atributo no puede tener 2 valores para el mismo producto
-@IdClass(ProductAttributeValue.ProductAttributeValueId.class) // Referencia a la clase interna estática
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"productId", "attributeId"})}) 
+@IdClass(ProductAttributeValue.ProductAttributeValueId.class) 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

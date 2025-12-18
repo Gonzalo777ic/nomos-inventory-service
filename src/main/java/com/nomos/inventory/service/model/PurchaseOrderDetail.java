@@ -23,7 +23,7 @@ public class PurchaseOrderDetail {
     @NotNull(message = "El ID de la Orden de Compra es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_order_id", nullable = false)
-    @JsonBackReference // ⭐ CORRECCIÓN: Ignora esta referencia para evitar el bucle.
+    @JsonBackReference 
     private PurchaseOrder purchaseOrder;
 
     @NotNull(message = "El ID del Producto es obligatorio")
