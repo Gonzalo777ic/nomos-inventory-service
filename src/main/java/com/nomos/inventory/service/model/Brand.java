@@ -12,10 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-/**
- * Entidad maestra para representar las Marcas de los Productos.
- * Incluye campos para nombre, código único, sitio web y URL del logo.
- */
+
 @Entity
 @Table(name = "brands")
 @Data

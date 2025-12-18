@@ -11,10 +11,7 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Entidad: Representa un lote específico de existencias físicas
- * de un producto en un almacén.
- */
+
 @Entity
 @Table(name = "inventory_items", uniqueConstraints = {
 

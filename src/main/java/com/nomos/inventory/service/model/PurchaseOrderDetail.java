@@ -7,11 +7,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-/**
- * Entidad que representa el detalle (ítem) de una Orden de Compra.
- * Cada detalle relaciona una Orden de Compra con un Producto específico,
- * indicando la cantidad y el costo unitario de compra.
- */
+
 @Entity
 @Data
 public class PurchaseOrderDetail {

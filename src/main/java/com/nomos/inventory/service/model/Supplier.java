@@ -7,10 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-/**
- * Entidad: Representa un Proveedor de productos (Supplier).
- * TaxId (Identificación fiscal) es UNIQUE.
- */
+
 @Entity
 @Table(name = "suppliers")
 @Data

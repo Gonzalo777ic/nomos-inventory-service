@@ -12,10 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-/**
- * Entidad maestra para la Unidad de Medida (Ej: Unidad, Kilogramo, Paquete).
- * Es fundamental para la consistencia del inventario y las transacciones.
- */
+
 @Entity
 @Table(name = "unit_of_measures")
 @Data

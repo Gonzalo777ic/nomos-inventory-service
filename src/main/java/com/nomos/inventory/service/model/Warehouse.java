@@ -7,10 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-/**
- * Entidad: Define un Almacén o Ubicación física de stock.
- * Permite gestionar inventario en múltiples ubicaciones.
- */
+
 @Entity
 @Table(name = "warehouses")
 @Data
