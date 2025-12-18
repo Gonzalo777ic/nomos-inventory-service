@@ -12,9 +12,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findBySku(String sku); // Necesario para DataLoader
 
-    // Método para verificar si un SKU ya existe (para creación)
     boolean existsBySku(String sku);
 
-    // Método para verificar si un SKU existe en otro producto (para actualización)
     boolean existsBySkuAndIdNot(String sku, Long id);
 }

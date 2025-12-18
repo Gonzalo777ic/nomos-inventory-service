@@ -1,6 +1,5 @@
 package com.nomos.inventory.service.model;
 
-// Tipos de movimientos de inventario que afectan el stock.
 public enum MovementType {
     ENTRADA,        // Ingreso por nueva compra o recepción de proveedor (REQ-FUN-01)
     SALIDA_VENTA,   // Salida por venta al cliente (REQ-FUN-02)

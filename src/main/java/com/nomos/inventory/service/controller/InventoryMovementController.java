@@ -63,7 +63,7 @@ public class InventoryMovementController {
      */
     @PostMapping
     public ResponseEntity<InventoryMovement> createMovement(@Valid @RequestBody InventoryMovement movement) {
-        // 1. Validar que el Producto exista
+
         Long productId = movement.getProduct().getId();
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -71,7 +71,6 @@ public class InventoryMovementController {
                 );
         movement.setProduct(product);
 
-        // 2. Validar InventoryItem si se proporciona (asumiendo que InventoryItem es la entidad de stock detallado)
         if (movement.getInventoryItem() != null && movement.getInventoryItem().getId() != null) {
             Long itemId = movement.getInventoryItem().getId();
             InventoryItem item = inventoryItemRepository.findById(itemId)
@@ -83,11 +82,9 @@ public class InventoryMovementController {
             movement.setInventoryItem(null); // Asegurar que sea nulo si no se especifica
         }
 
-        // 3. Persistir el movimiento
         InventoryMovement createdMovement = movementRepository.save(movement);
 
-        // NOTA: En una arquitectura completa, este punto activaría la lógica de negocio
-        // para actualizar el stock real en la tabla InventoryItem. Aquí solo guardamos la traza.
+
 
         return new ResponseEntity<>(createdMovement, HttpStatus.CREATED);
     }

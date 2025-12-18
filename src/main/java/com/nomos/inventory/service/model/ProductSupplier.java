@@ -33,34 +33,27 @@ public class ProductSupplier {
         private Long supplierId;
     }
 
-    // Clave primaria compuesta 1: FK a Product
     @Id
     @NotNull
     private Long productId;
 
-    // Clave primaria compuesta 2: FK a Supplier
     @Id
     @NotNull
     private Long supplierId;
 
-    // Código del producto que usa el proveedor (opcional)
     private String supplierProductCode;
 
-    // Costo unitario estándar de compra a este proveedor
     @NotNull
     @Min(0)
     private Double unitCost;
 
-    // Tiempo de entrega estimado en días
     @NotNull
     @Min(0)
     private Integer leadTimeDays;
 
-    // Indica si este es el proveedor preferido para este producto
     @NotNull
     private Boolean isPreferred = false;
 
-    // Indica si la relación está activa (para manejo histórico)
     @NotNull
     private Boolean isActive = true;
 }

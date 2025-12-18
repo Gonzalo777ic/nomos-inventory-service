@@ -57,7 +57,7 @@ public class SupplierController {
      */
     @PostMapping
     public ResponseEntity<Supplier> createSupplier(@Valid @RequestBody Supplier supplier) {
-        // Validación de unicidad
+
         if (supplierRepository.findByTaxId(supplier.getTaxId()).isPresent()) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT, "Ya existe un proveedor con el taxId: " + supplier.getTaxId()
@@ -79,7 +79,6 @@ public class SupplierController {
                         HttpStatus.NOT_FOUND, "Proveedor con ID " + id + " no encontrado para actualizar")
                 );
 
-        // 1. Verificar unicidad del taxId si ha cambiado
         if (!supplier.getTaxId().equals(supplierDetails.getTaxId())) {
             Optional<Supplier> existingSupplier = supplierRepository.findByTaxId(supplierDetails.getTaxId());
             if (existingSupplier.isPresent() && !existingSupplier.get().getId().equals(id)) {
@@ -89,7 +88,6 @@ public class SupplierController {
             }
         }
 
-        // 2. Actualizar campos
         supplier.setName(supplierDetails.getName());
         supplier.setTaxId(supplierDetails.getTaxId());
         supplier.setEmail(supplierDetails.getEmail());
@@ -111,7 +109,7 @@ public class SupplierController {
                     HttpStatus.NOT_FOUND, "Proveedor con ID " + id + " no encontrado para eliminar"
             );
         }
-        // NOTA: Se asume que JPA/Hibernate manejará las restricciones de llave foránea.
+
         supplierRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

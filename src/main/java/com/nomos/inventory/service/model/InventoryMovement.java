@@ -18,13 +18,11 @@ public class InventoryMovement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // FK a InventoryItem (asumiendo que existe una entidad InventoryItem para stock detallado)
-    // Permite trazar qué registro de stock específico fue afectado.
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_item_id")
     private InventoryItem inventoryItem; // Asumiendo InventoryItem existe
 
-    // FK a Product (para referencia general del producto movido)
     @NotNull(message = "El producto es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
@@ -44,11 +42,9 @@ public class InventoryMovement {
     @PastOrPresent(message = "La fecha de movimiento no puede ser futura")
     private LocalDateTime movementDate;
 
-    // Campos de referencia para trazar el origen del movimiento (Ej: Orden de Compra, Factura de Venta)
     private Long referenceId;
 
     private String referenceService; // Ej: "PurchaseOrder", "SalesInvoice", "StockAdjustment"
 
-    // Constructor sin argumentos requerido por JPA
     public InventoryMovement() {}
 }

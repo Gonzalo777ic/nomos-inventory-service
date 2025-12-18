@@ -9,10 +9,9 @@ import java.util.Optional;
  */
 public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
 
-    // Método para encontrar el almacén principal.
     Optional<Warehouse> findByIsMainTrue();
 
     Optional<Warehouse> findByName(String name); // Necesario para DataLoader
-    // Método para verificar si ya existe un almacén con un nombre dado.
+
     boolean existsByName(String name);
 }

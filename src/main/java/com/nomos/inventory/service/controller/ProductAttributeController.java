@@ -17,14 +17,12 @@ public class ProductAttributeController {
 
     private final ProductAttributeRepository attributeRepository;
 
-    // 1. GET (READ ALL)
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
     public ResponseEntity<List<ProductAttribute>> getAllAttributes() {
         return ResponseEntity.ok(attributeRepository.findAll());
     }
 
-    // 2. GET (READ ONE)
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
     public ResponseEntity<ProductAttribute> getAttributeById(@PathVariable Long id) {
@@ -33,7 +31,6 @@ public class ProductAttributeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 3. POST (CREATE) - Validación de unicidad de nombre
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> createAttribute(@Valid @RequestBody ProductAttribute attribute) {
@@ -45,7 +42,6 @@ public class ProductAttributeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedAttribute);
     }
 
-    // 4. PUT (UPDATE) - Validación de unicidad de nombre
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> updateAttribute(@PathVariable Long id, @Valid @RequestBody ProductAttribute attributeDetails) {
@@ -64,13 +60,12 @@ public class ProductAttributeController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // 5. DELETE
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteAttribute(@PathVariable Long id) {
         if (attributeRepository.existsById(id)) {
-            // Nota: En un sistema real, se debería verificar si existen ProductAttributeValue
-            // asociados a este atributo antes de eliminarlo (o forzar el borrado en cascada).
+
+
             attributeRepository.deleteById(id);
             return ResponseEntity.noContent().build();
         } else {

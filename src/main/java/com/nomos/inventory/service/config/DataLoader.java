@@ -17,7 +17,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
 
-    // Inyección de todos los Repositorios necesarios
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
     private final UnitOfMeasureRepository uomRepository;
@@ -35,26 +34,22 @@ public class DataLoader implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        System.out.println("--- 🚀 Ejecutando inicialización de datos de la base de datos (DataLoader) ---");
+        System.out.println("--- Ejecutando inicialización de datos de la base de datos (DataLoader) ---");
 
-        // 1. MAESTROS: UoM, Brand, Category, Supplier (No tienen dependencias)
         initializeUoM();
         initializeBrands();
         initializeCategories();
         initializeSuppliers();
 
-        // 2. PRODUCTOS y sus relaciones (Dependen de los Maestros)
         initializeProductsAndRelations();
 
-        // 3. INVENTARIO (Depende de Product y Warehouse)
         initializeWarehouses();
         initializeInventory();
 
-        // 4. TIENDA (Schedules)
         initializeStoreSchedule();
         initializeAnnouncementsAndClosures();
 
-        System.out.println("--- ✅ Inicialización completada. ---");
+        System.out.println("--- Inicialización completada. ---");
     }
 
     /*
@@ -86,12 +81,11 @@ public class DataLoader implements CommandLineRunner {
 
     private void initializeCategories() {
         if (categoryRepository.count() == 0) {
-            // Categorías principales
+
             Category electronica = categoryRepository.save(new Category(null, "Electrónica", "Dispositivos electrónicos de consumo.", null));
             Category computadoras = categoryRepository.save(new Category(null, "Computadoras", "Equipo de procesamiento y software.", null));
             Category red = categoryRepository.save(new Category(null, "Redes", "Componentes y cableado de red.", electronica)); // Nueva Categoría
 
-            // Subcategorías
             categoryRepository.save(new Category(null, "Portátiles", "Laptops y ultrabooks.", computadoras));
             categoryRepository.save(new Category(null, "Monitores", "Dispositivos de visualización.", electronica));
             categoryRepository.save(new Category(null, "Periféricos", "Accesorios de entrada/salida.", computadoras));
@@ -110,7 +104,7 @@ public class DataLoader implements CommandLineRunner {
 
     private void initializeProductsAndRelations() {
         if (productRepository.count() == 0) {
-            // Obtener IDs de Maestros
+
             Long brandIdIntel = brandRepository.findByName("Intel Corporation").orElseThrow().getId();
             Long brandIdSamsung = brandRepository.findByName("Samsung Electronics").orElseThrow().getId();
             Long brandIdGeneric = brandRepository.findByName("Generic Network").orElseThrow().getId();
@@ -122,47 +116,38 @@ public class DataLoader implements CommandLineRunner {
             Long uomIdUnidad = uomRepository.findByAbbreviation("Un").orElseThrow().getId();
             Long uomIdMetro = uomRepository.findByAbbreviation("M").orElseThrow().getId();
 
-            // 1. PRODUCTO 1: Laptop (Producto de alto valor)
             Product p1 = new Product(null, "LP12345", "Laptop Core i7 16GB RAM", brandIdIntel, 1200.00, 5, categoryIdPortatiles, uomIdUnidad, null, null, null, null, null);
             productRepository.save(p1);
 
-            // 2. PRODUCTO 2: Monitor (Producto de valor medio)
             Product p2 = new Product(null, "MON789", "Monitor LED Curvo 32\"", brandIdSamsung, 450.00, 10, categoryIdMonitores, uomIdUnidad, null, null, null, null, null);
             productRepository.save(p2);
 
-            // 3. PRODUCTO 3: Cable de Red (Commodity con múltiples fuentes)
             Product p3 = new Product(null, "CBLCAT6", "Cable de Red UTP Cat 6 (por metro)", brandIdGeneric, 1.50, 50, categoryIdRedes, uomIdMetro, null, null, null, null, null);
             productRepository.save(p3);
 
-
-            // Relaciones de Imágenes
             productImageRepository.saveAll(Arrays.asList(
                     new ProductImage(null, p1.getId(), "https://media.falabella.com/falabellaPE/20727034_001/w=800,h=800,fit=pad", true, 0, null),
                     new ProductImage(null, p2.getId(), "https://http2.mlstatic.com/D_NQ_NP_2X_790766-MLA96253572256_102025-F.webp", true, 0, null),
                     new ProductImage(null, p3.getId(), "https://media.falabella.com/falabellaPE/117697871_01/w=1500,h=1500,fit=pad", true, 0, null)
             ));
 
-            // Relaciones de Proveedores
             Supplier supplier1 = supplierRepository.findByTaxId("20512345678").orElseThrow(); // Tech Global
             Supplier supplier2 = supplierRepository.findByTaxId("20498765432").orElseThrow(); // Componentes Rápidos
             Supplier supplier3 = supplierRepository.findByTaxId("20555555555").orElseThrow(); // Insumos Norte
 
-            // --- P1 (Laptop) - Múltiples Proveedores ---
-            // Proveedor 1: Preferido (Mejor costo)
+
             productSupplierRepository.save(new ProductSupplier(p1.getId(), supplier1.getId(), "ITL-LP-22", 950.00, 7, true, true));
-            // Proveedor 2: Alternativa (Costo ligeramente superior, menor Lead Time)
+
             productSupplierRepository.save(new ProductSupplier(p1.getId(), supplier2.getId(), "RAP-LAP-i7", 980.00, 5, false, true));
 
-            // --- P2 (Monitor) - Un Único Proveedor ---
-            // Proveedor 1: Único y Preferido por defecto
+
             productSupplierRepository.save(new ProductSupplier(p2.getId(), supplier1.getId(), "SAM-CURV-32", 380.00, 10, true, true));
 
-            // --- P3 (Cable) - Tres Proveedores (Commodity) ---
-            // Proveedor 2: Preferido (Mejor costo)
+
             productSupplierRepository.save(new ProductSupplier(p3.getId(), supplier2.getId(), "C-RED-RAP", 0.85, 4, true, true));
-            // Proveedor 1: Alternativa 1 (Costoso, backup)
+
             productSupplierRepository.save(new ProductSupplier(p3.getId(), supplier1.getId(), "TG-C6-EST", 1.10, 8, false, true));
-            // Proveedor 3: Alternativa 2 (Buen costo, pero lead time lento)
+
             productSupplierRepository.save(new ProductSupplier(p3.getId(), supplier3.getId(), "NOR-CAT6", 0.90, 15, false, true));
         }
     }
@@ -184,13 +169,10 @@ public class DataLoader implements CommandLineRunner {
             Warehouse w1 = warehouseRepository.findByName("Almacén Principal").orElseThrow();
             Warehouse w2 = warehouseRepository.findByName("Tienda Central").orElseThrow();
 
-            // Stock para P1 (Laptop)
             inventoryItemRepository.save(new InventoryItem(null, p1, w1, 25, 950.00, "LOTE-A2025", null, "A3-E2", LocalDateTime.now().minusDays(30)));
 
-            // Stock para P2 (Monitor)
             inventoryItemRepository.save(new InventoryItem(null, p2, w1, 40, 380.00, "LOTE-M2025", LocalDate.now().plusYears(2), "A1-E5", LocalDateTime.now().minusDays(45)));
 
-            // Stock para P3 (Cable) - Gran cantidad en almacén
             inventoryItemRepository.save(new InventoryItem(null, p3, w1, 5000, 0.85, "LOTE-CAT6-1", null, "B1-C4", LocalDateTime.now().minusDays(10)));
         }
     }

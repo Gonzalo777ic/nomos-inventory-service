@@ -22,22 +22,18 @@ public class ProductImage {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    // URL/Path de la imagen
     @NotBlank(message = "La URL de la imagen es obligatoria")
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
-    // Indica si es la imagen principal para el frontend
     @NotNull
     @Column(name = "is_main", nullable = false)
     private Boolean isMain = false;
 
-    // Orden en la galería
     @NotNull
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;
 
-    // Mapeo bidireccional (opcional, útil para la navegación, pero no crea una columna)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", insertable = false, updatable = false)
     @JsonIgnore

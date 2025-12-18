@@ -34,17 +34,14 @@ public class ProductAttributeValue {
         private Long attributeId;
     }
 
-    // Clave primaria compuesta 1: FK a Product
     @Id
     @NotNull(message = "El ID del producto es obligatorio")
     private Long productId;
 
-    // Clave primaria compuesta 2: FK a ProductAttribute
     @Id
     @NotNull(message = "El ID del atributo es obligatorio")
     private Long attributeId;
 
-    // El valor específico del atributo para este producto (Ej: "Rojo", "Grande", "100W")
     @NotBlank(message = "El valor del atributo es obligatorio")
     private String value;
 }

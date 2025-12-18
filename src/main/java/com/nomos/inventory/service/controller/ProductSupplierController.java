@@ -20,7 +20,6 @@ public class ProductSupplierController {
 
     private final ProductSupplierRepository psRepository;
 
-    // --- LÓGICA AUXILIAR DE NEGOCIO ---
 
     /**
      * Asegura que si se establece un nuevo proveedor como preferido (isPreferred=true),
@@ -34,13 +33,11 @@ public class ProductSupplierController {
             return;
         }
 
-        // 1. Buscar todos los proveedores preferidos existentes para el producto.
-        // Ahora el repositorio devuelve una lista (corregido).
+
         List<ProductSupplier> existingPreferred = psRepository.findByProductIdAndIsPreferred(productId, true);
 
-        // 2. Desactivar todos los proveedores preferidos anteriores, excepto el nuevo.
         for (ProductSupplier ps : existingPreferred) {
-            // Desactivar SOLAMENTE si no es el mismo que se va a activar
+
             if (!ps.getSupplierId().equals(newPreferredSupplierId)) {
                 ps.setIsPreferred(false);
                 psRepository.save(ps);
@@ -48,9 +45,7 @@ public class ProductSupplierController {
         }
     }
 
-    // --- ENDPOINTS ---
 
-    // 1. GET ALL by Product (La consulta más común)
     @GetMapping("/product/{productId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
     public ResponseEntity<List<ProductSupplier>> getSuppliersByProduct(@PathVariable Long productId) {
@@ -58,13 +53,11 @@ public class ProductSupplierController {
         return ResponseEntity.ok(relations);
     }
 
-    // 2. POST (CREATE) - Añadir un proveedor a un producto
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Transactional // 👈 Mantenemos la transacción en el método público
     public ResponseEntity<?> addProductSupplier(@Valid @RequestBody ProductSupplier relation) {
 
-        // 🎯 Lógica de unicidad para 'isPreferred'
         if (Boolean.TRUE.equals(relation.getIsPreferred())) {
             enforceSinglePreferredSupplier(relation.getProductId(), relation.getSupplierId());
         }
@@ -73,7 +66,6 @@ public class ProductSupplierController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRelation);
     }
 
-    // 3. PUT (UPDATE) - Actualizar los detalles de la relación
     @PutMapping("/{productId}/{supplierId}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Transactional // 👈 Mantenemos la transacción en el método público
@@ -86,15 +78,12 @@ public class ProductSupplierController {
 
         return psRepository.findById(id).map(relation -> {
 
-            // 1. Guardar el estado de preferencia de la request
             boolean newIsPreferred = Boolean.TRUE.equals(relationDetails.getIsPreferred());
 
-            // 2. Si la nueva relación quiere ser la preferida, forzamos la unicidad
             if (newIsPreferred) {
                 enforceSinglePreferredSupplier(productId, supplierId);
             }
 
-            // 3. Actualizar el resto de campos
             relation.setSupplierProductCode(relationDetails.getSupplierProductCode());
             relation.setUnitCost(relationDetails.getUnitCost());
             relation.setLeadTimeDays(relationDetails.getLeadTimeDays());
@@ -106,7 +95,6 @@ public class ProductSupplierController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // 4. DELETE (DELETE) - Eliminar la relación
     @DeleteMapping("/{productId}/{supplierId}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteProductSupplier(

@@ -54,7 +54,7 @@ public class PurchaseOrderDetailController {
      */
     @GetMapping("/by-order/{orderId}")
     public ResponseEntity<List<PurchaseOrderDetail>> getDetailsByOrderId(@PathVariable Long orderId) {
-        // Opcional: validar que la orden exista antes de buscar sus detalles
+
         if (!orderRepository.existsById(orderId)) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Orden de Compra con ID " + orderId + " no encontrada"
@@ -70,21 +70,19 @@ public class PurchaseOrderDetailController {
      */
     @PostMapping
     public ResponseEntity<PurchaseOrderDetail> createDetail(@Valid @RequestBody PurchaseOrderDetail detail) {
-        // 1. Validar que la Orden de Compra exista
+
         Long orderId = detail.getPurchaseOrder().getId();
         PurchaseOrder order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "Orden de Compra con ID " + orderId + " no existe")
                 );
 
-        // 2. Validar que el Producto exista
         Long productId = detail.getProduct().getId();
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "Producto con ID " + productId + " no existe")
                 );
 
-        // 3. Establecer las referencias gestionadas por JPA
         detail.setPurchaseOrder(order);
         detail.setProduct(product);
 
@@ -102,7 +100,6 @@ public class PurchaseOrderDetailController {
                         HttpStatus.NOT_FOUND, "Detalle de Orden con ID " + id + " no encontrado para actualizar")
                 );
 
-        // 1. Validar y actualizar PurchaseOrder si cambia
         if (detailDetails.getPurchaseOrder() != null && !existingDetail.getPurchaseOrder().getId().equals(detailDetails.getPurchaseOrder().getId())) {
             Long newOrderId = detailDetails.getPurchaseOrder().getId();
             PurchaseOrder newOrder = orderRepository.findById(newOrderId)
@@ -112,7 +109,6 @@ public class PurchaseOrderDetailController {
             existingDetail.setPurchaseOrder(newOrder);
         }
 
-        // 2. Validar y actualizar Product si cambia
         if (detailDetails.getProduct() != null && !existingDetail.getProduct().getId().equals(detailDetails.getProduct().getId())) {
             Long newProductId = detailDetails.getProduct().getId();
             Product newProduct = productRepository.findById(newProductId)
@@ -122,7 +118,6 @@ public class PurchaseOrderDetailController {
             existingDetail.setProduct(newProduct);
         }
 
-        // 3. Actualizar campos
         existingDetail.setQuantity(detailDetails.getQuantity());
         existingDetail.setUnitCost(detailDetails.getUnitCost());
 
