@@ -1,5 +1,5 @@
 package com.nomos.inventory.service.controller;
-import org.springframework.transaction.annotation.Transactional; // Importar Transactional
+import org.springframework.transaction.annotation.Transactional; 
 import com.nomos.inventory.service.model.PurchaseOrder;
 import com.nomos.inventory.service.model.Supplier;
 import com.nomos.inventory.service.repository.PurchaseOrderRepository;
@@ -59,7 +59,7 @@ public class PurchaseOrderController {
      * Requiere que el Supplier asociado exista.
      */
     @PostMapping
-    @Transactional // Añadir @Transactional aquí también para asegurar el guardado de detalles
+    @Transactional 
     public ResponseEntity<PurchaseOrder> createPurchaseOrder(@Valid @RequestBody PurchaseOrder order) {
 
         Long supplierId = order.getSupplier().getId();
@@ -82,9 +82,9 @@ public class PurchaseOrderController {
      * PUT /api/v1/purchase-orders/{id} : Actualizar una orden de compra existente.
      */
     @PutMapping("/{id}")
-    @Transactional // IMPORTANTE: Necesitas @Transactional para que el EntityManager maneje la sincronización
+    @Transactional 
     public ResponseEntity<PurchaseOrder> updatePurchaseOrder(@PathVariable Long id, @Valid @RequestBody PurchaseOrder orderDetails) {
-        PurchaseOrder existingOrder = purchaseOrderRepository.findByIdWithDetailsAndSupplier(id) // Usar el fetch-join
+        PurchaseOrder existingOrder = purchaseOrderRepository.findByIdWithDetailsAndSupplier(id) 
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Orden de Compra con ID " + id + " no encontrada para actualizar")
                 );
@@ -111,8 +111,8 @@ public class PurchaseOrderController {
 
         if (orderDetails.getDetails() != null) {
             orderDetails.getDetails().forEach(newDetail -> {
-                newDetail.setPurchaseOrder(existingOrder); // Establece la referencia al padre
-                existingOrder.getDetails().add(newDetail); // Añade al padre
+                newDetail.setPurchaseOrder(existingOrder); 
+                existingOrder.getDetails().add(newDetail); 
             });
         }
 

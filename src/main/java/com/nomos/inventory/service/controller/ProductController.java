@@ -3,7 +3,7 @@ package com.nomos.inventory.service.controller;
 import com.nomos.inventory.service.repository.ProductSupplierRepository;
 import com.nomos.inventory.service.repository.SupplierRepository;
 import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.ProductSupplier; // Importar ProductSupplier para usarlo
+import com.nomos.inventory.service.model.ProductSupplier; 
 import com.nomos.inventory.service.repository.InventoryItemRepository;
 import com.nomos.inventory.service.repository.ProductRepository;
 import com.nomos.inventory.service.repository.ProductImageRepository;
@@ -134,7 +134,7 @@ public class ProductController {
 
             ProductSupplier preferredSupplier = preferredSuppliers.get(0);
 
-            Long supplierId = preferredSupplier.getSupplierId(); // Ahora sí podemos llamar a getSupplierId()
+            Long supplierId = preferredSupplier.getSupplierId(); 
             supplierRepository.findById(supplierId)
                     .ifPresent(supplier -> product.setSupplierName(supplier.getName()));
         }

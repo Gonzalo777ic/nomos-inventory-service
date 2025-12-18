@@ -7,8 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import lombok.NoArgsConstructor; // 🔑 Añadido
-import lombok.AllArgsConstructor; // 🔑 Añadido
+import lombok.NoArgsConstructor; 
+import lombok.AllArgsConstructor; 
 
 /**
  * Entidad que registra mensajes informativos (anuncios, avisos de feriados, promociones)
@@ -17,8 +17,8 @@ import lombok.AllArgsConstructor; // 🔑 Añadido
 @Entity
 @Table(name = "announcements")
 @Data
-@NoArgsConstructor // 🔑 Añadido
-@AllArgsConstructor // 🔑 Añadido
+@NoArgsConstructor 
+@AllArgsConstructor 
 public class Announcement {
 
     @Id
@@ -31,7 +31,7 @@ public class Announcement {
 
     @NotBlank(message = "El contenido del mensaje es obligatorio")
     @Column(columnDefinition = "TEXT")
-    private String content; // El mensaje completo para el modal/banner
+    private String content; 
 
     @NotNull(message = "La fecha de inicio es obligatoria")
     private LocalDateTime startDate;
@@ -41,9 +41,9 @@ public class Announcement {
 
     @NotNull(message = "El tipo de anuncio es obligatorio")
     @Enumerated(EnumType.STRING)
-    private AnnouncementType type; // BANNER, MODAL, POPUP
+    private AnnouncementType type; 
 
-    private Boolean isActive; // Control para activar/desactivar sin cambiar fechas
+    private Boolean isActive; 
 
 
     /**
@@ -58,7 +58,7 @@ public class Announcement {
         }
 
         if (startDate == null || endDate == null) {
-            return; // La anotación @NotNull ya manejará esto
+            return; 
         }
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("La fecha de inicio (startDate) no puede ser posterior a la fecha de fin (endDate).");

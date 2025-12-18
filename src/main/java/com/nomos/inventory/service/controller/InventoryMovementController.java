@@ -1,10 +1,10 @@
 package com.nomos.inventory.service.controller;
 
 import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.InventoryItem; // Asumiendo que esta entidad existe
+import com.nomos.inventory.service.model.InventoryItem; 
 import com.nomos.inventory.service.model.InventoryMovement;
 import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.InventoryItemRepository; // Asumiendo que este repo existe
+import com.nomos.inventory.service.repository.InventoryItemRepository; 
 import com.nomos.inventory.service.repository.InventoryMovementRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class InventoryMovementController {
 
     private final InventoryMovementRepository movementRepository;
     private final ProductRepository productRepository;
-    private final InventoryItemRepository inventoryItemRepository; // Asumiendo inyección de InventoryItemRepository
+    private final InventoryItemRepository inventoryItemRepository; 
 
     @Autowired
     public InventoryMovementController(
@@ -79,7 +79,7 @@ public class InventoryMovementController {
                     );
             movement.setInventoryItem(item);
         } else {
-            movement.setInventoryItem(null); // Asegurar que sea nulo si no se especifica
+            movement.setInventoryItem(null); 
         }
 
         InventoryMovement createdMovement = movementRepository.save(movement);

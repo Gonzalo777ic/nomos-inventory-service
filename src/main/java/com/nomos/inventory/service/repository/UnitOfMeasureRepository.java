@@ -11,5 +11,5 @@ public interface UnitOfMeasureRepository extends JpaRepository<UnitOfMeasure, Lo
 
 
     boolean existsByAbbreviation(String abbreviation);
-    Optional<UnitOfMeasure> findByAbbreviation(String abbreviation); // Necesario para DataLoader
+    Optional<UnitOfMeasure> findByAbbreviation(String abbreviation); 
 }

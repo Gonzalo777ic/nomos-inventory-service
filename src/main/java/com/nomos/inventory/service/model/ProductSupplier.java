@@ -15,7 +15,7 @@ import java.io.Serializable;
 @Entity
 @Table(name = "product_suppliers",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"productId", "supplierId"})})
-@IdClass(ProductSupplier.ProductSupplierId.class) // Referencia a la clase interna estática
+@IdClass(ProductSupplier.ProductSupplierId.class) 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

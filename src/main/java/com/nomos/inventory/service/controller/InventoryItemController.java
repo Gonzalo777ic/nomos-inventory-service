@@ -23,7 +23,7 @@ public class InventoryItemController {
 
     private final InventoryItemRepository itemRepository;
     private final ProductRepository productRepository;
-    private final WarehouseRepository warehouseRepository; // Inyección para validar FK
+    private final WarehouseRepository warehouseRepository; 
 
     @GetMapping("/product/{productId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER', 'ROLE_AUDITOR')")
