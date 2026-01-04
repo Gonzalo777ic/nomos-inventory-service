@@ -3,9 +3,7 @@ package com.nomos.inventory.service.repository;
 import com.nomos.inventory.service.model.Brand;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
-/**
- * Repositorio para la entidad Brand.
- */
+
 public interface BrandRepository extends JpaRepository<Brand, Long> {
 
     boolean existsByName(String name);
