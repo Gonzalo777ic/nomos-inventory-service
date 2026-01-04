@@ -4,9 +4,7 @@ import com.nomos.inventory.service.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
-/**
- * Repositorio para la entidad Product.
- */
+
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
 

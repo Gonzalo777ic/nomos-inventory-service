@@ -7,16 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-/**
- * Repositorio para la entidad StoreSchedule.
- */
+
 @Repository
 public interface StoreScheduleRepository extends JpaRepository<StoreSchedule, Long> {
 
-    /**
-     * Busca un horario por un día de la semana específico.
-     * @param dayOfWeek El día de la semana.
-     * @return Un Optional que contiene el StoreSchedule si existe, o vacío.
-     */
+    
     Optional<StoreSchedule> findByDayOfWeek(DayOfWeek dayOfWeek);
 }
