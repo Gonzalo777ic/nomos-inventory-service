@@ -3,6 +3,7 @@ package com.nomos.inventory.service.repository;
 import com.nomos.inventory.service.model.PurchaseOrder;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -18,5 +19,11 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
     @Query("SELECT po FROM PurchaseOrder po JOIN FETCH po.supplier s LEFT JOIN FETCH po.details d LEFT JOIN FETCH d.product p")
     List<PurchaseOrder> findAllWithSupplierAndDetailsAndProducts();
 
+    @Query("SELECT p FROM PurchaseOrder p " +
+            "LEFT JOIN FETCH p.supplier s " +
+            "LEFT JOIN FETCH p.details d " +
+            "LEFT JOIN FETCH d.product " +
+            "WHERE s.id = :supplierId")
+    List<PurchaseOrder> findBySupplierId(Long supplierId);
 
 }
