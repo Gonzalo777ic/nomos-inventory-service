@@ -1,11 +1,15 @@
 package com.nomos.inventory.service.model;
 
 public enum OrderStatus {
-    PENDIENTE("Pendiente"),         
-    CONFIRMADO("Confirmado"),         
-    RECIBIDO_PARCIAL("Recibido Parcial"), 
-    COMPLETO("Completo"),           
-    CANCELADO("Cancelado");         
+
+    BORRADOR("Borrador"),
+
+    PENDIENTE("Pendiente"),
+    CONFIRMADO("Confirmado"),
+    RECHAZADO("Rechazado"), 
+
+    COMPLETO("Completo"),
+    CANCELADO("Cancelado"); 
 
     private final String displayValue;
 
