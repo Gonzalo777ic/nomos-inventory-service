@@ -45,12 +45,6 @@ public class PurchaseOrderController {
         this.authClient = authClient;
     }
 
-    /**
-     * GET Seguro:
-     * 1. Si es Admin -> Ve todo.
-     * 2. Si es Proveedor -> Ve solo lo suyo.
-     * 3. Si falla la comunicación o no tiene rol -> No ve NADA (Lista vacía).
-     */
     @GetMapping
     @Transactional(readOnly = true)
     public ResponseEntity<List<PurchaseOrder>> getAllPurchaseOrders() {
@@ -66,22 +60,23 @@ public class PurchaseOrderController {
                 });
 
         if (isAdmin) {
-            logger.info("Usuario es ADMIN. Retornando todas las órdenes.");
             return ResponseEntity.ok(purchaseOrderRepository.findAllWithSupplierAndDetailsAndProducts());
         }
 
-        logger.info("Usuario NO es Admin. Consultando Auth-Service...");
         Optional<Long> supplierIdOpt = authClient.getSupplierIdByEmail(currentEmail);
 
         if (supplierIdOpt.isPresent()) {
             Long sId = supplierIdOpt.get();
-            logger.info("Proveedor identificado (ID: {}). Filtrando órdenes.", sId);
-            return ResponseEntity.ok(purchaseOrderRepository.findBySupplierId(sId));
+            List<PurchaseOrder> orders = purchaseOrderRepository.findBySupplierId(sId);
+
+            List<PurchaseOrder> visibleOrders = orders.stream()
+                    .filter(o -> o.getStatus() != OrderStatus.BORRADOR)
+                    .toList();
+
+            return ResponseEntity.ok(visibleOrders);
         }
 
-
-
-        logger.warn("ALERTA DE SEGURIDAD: Usuario {} sin perfil de proveedor. Retornando lista vacía.", currentEmail);
+        logger.warn("ALERTA: Usuario {} sin perfil. Retornando vacío.", currentEmail);
         return ResponseEntity.ok(List.of());
     }
 
@@ -90,7 +85,6 @@ public class PurchaseOrderController {
     public ResponseEntity<PurchaseOrder> getPurchaseOrderById(@PathVariable Long id) {
         PurchaseOrder order = purchaseOrderRepository.findByIdWithDetailsAndSupplier(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Orden no encontrada"));
-
         return ResponseEntity.ok(order);
     }
 
@@ -103,13 +97,14 @@ public class PurchaseOrderController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Proveedor no existe"));
 
         order.setSupplier(supplier);
-        order.setStatus(OrderStatus.PENDIENTE);
+
+        order.setStatus(OrderStatus.BORRADOR);
 
         if (order.getDetails() != null) {
             order.getDetails().forEach(detail -> detail.setPurchaseOrder(order));
         }
 
-        logger.info("Nueva Orden Creada ID: {} para Proveedor: {}", order.getId(), supplier.getName());
+        logger.info("Orden BORRADOR creada ID: {}", order.getId());
         return new ResponseEntity<>(purchaseOrderRepository.save(order), HttpStatus.CREATED);
     }
 
@@ -120,6 +115,10 @@ public class PurchaseOrderController {
         PurchaseOrder existingOrder = purchaseOrderRepository.findByIdWithDetailsAndSupplier(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Orden no encontrada"));
 
+        if (existingOrder.getStatus() == OrderStatus.CANCELADO || existingOrder.getStatus() == OrderStatus.COMPLETO) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se puede editar una orden finalizada.");
+        }
+
         if (orderDetails.getSupplier() != null && !existingOrder.getSupplier().getId().equals(orderDetails.getSupplier().getId())) {
             Supplier newSupplier = supplierRepository.findById(orderDetails.getSupplier().getId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nuevo Proveedor no existe"));
@@ -129,7 +128,10 @@ public class PurchaseOrderController {
         existingOrder.setOrderDate(orderDetails.getOrderDate());
         existingOrder.setDeliveryDate(orderDetails.getDeliveryDate());
         existingOrder.setTotalAmount(orderDetails.getTotalAmount());
-        existingOrder.setStatus(orderDetails.getStatus());
+
+
+
+
 
         existingOrder.getDetails().clear();
         if (orderDetails.getDetails() != null) {
@@ -146,7 +148,7 @@ public class PurchaseOrderController {
     @Transactional
     public ResponseEntity<PurchaseOrder> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         String newStatusStr = payload.get("status");
-        if (newStatusStr == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El campo 'status' es obligatorio");
+        if (newStatusStr == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status requerido");
 
         PurchaseOrder order = purchaseOrderRepository.findByIdWithDetailsAndSupplier(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Orden no encontrada"));
@@ -159,20 +161,35 @@ public class PurchaseOrderController {
                     .anyMatch(a -> a.getAuthority().toUpperCase().contains("PROVEEDOR") || a.getAuthority().toUpperCase().contains("SUPPLIER"));
 
             if (isSupplier) {
+
+
                 if (order.getStatus() != OrderStatus.PENDIENTE) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Solo se pueden gestionar órdenes en estado PENDIENTE");
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Solo puede responder a órdenes Pendientes.");
                 }
-                if (newStatusEnum != OrderStatus.CONFIRMADO && newStatusEnum != OrderStatus.CANCELADO) {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acción no permitida: El proveedor solo puede Confirmar o Rechazar.");
+
+
+                if (newStatusEnum != OrderStatus.CONFIRMADO && newStatusEnum != OrderStatus.RECHAZADO) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acción no permitida: Debe Aceptar (Confirmado) o Rechazar.");
+                }
+            } else {
+
+
+                if (order.getStatus() == OrderStatus.BORRADOR && newStatusEnum == OrderStatus.PENDIENTE) {
+                    logger.info("Orden {} enviada al proveedor.", id);
+                }
+
+                if (newStatusEnum == OrderStatus.CANCELADO) {
+                    if (order.getStatus() == OrderStatus.COMPLETO) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se puede cancelar una orden ya completada.");
+                    }
                 }
             }
 
-            logger.info("Cambiando estado Orden {} de {} a {}", id, order.getStatus(), newStatusEnum);
             order.setStatus(newStatusEnum);
             return ResponseEntity.ok(purchaseOrderRepository.save(order));
 
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido: " + newStatusStr);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido.");
         }
     }
 
