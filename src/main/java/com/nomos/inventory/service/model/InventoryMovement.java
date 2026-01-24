@@ -27,7 +27,10 @@ public class InventoryMovement {
     private Product product;
 
     @NotNull(message = "El cambio de cantidad es obligatorio")
-    private Integer quantityChange; 
+    private Integer quantityChange;
+
+    @Column(name = "balance_after")
+    private Integer balanceAfter;
 
     @NotNull(message = "El tipo de movimiento es obligatorio")
     @Enumerated(EnumType.STRING)
