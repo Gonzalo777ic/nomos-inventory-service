@@ -62,29 +62,46 @@ public class InventoryMovementController {
      * POST /api/v1/inventory-movements : Registrar un nuevo movimiento.
      */
     @PostMapping
+    @Transactional // Importante: O se guardan ambos o ninguno
     public ResponseEntity<InventoryMovement> createMovement(@Valid @RequestBody InventoryMovement movement) {
 
         Long productId = movement.getProduct().getId();
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "Producto con ID " + productId + " no existe")
-                );
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Producto no existe"));
         movement.setProduct(product);
 
+
+        InventoryItem inventoryItem = null;
+
         if (movement.getInventoryItem() != null && movement.getInventoryItem().getId() != null) {
-            Long itemId = movement.getInventoryItem().getId();
-            InventoryItem item = inventoryItemRepository.findById(itemId)
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST, "InventoryItem con ID " + itemId + " no existe")
-                    );
-            movement.setInventoryItem(item);
+            inventoryItem = inventoryItemRepository.findById(movement.getInventoryItem().getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Item de inventario no encontrado"));
         } else {
-            movement.setInventoryItem(null); 
+
+
+            inventoryItem = inventoryItemRepository.findByProductId(productId)
+                    .stream().findFirst()
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay inventario inicializado para este producto"));
         }
 
+        int currentStock = inventoryItem.getQuantity(); // Asumo que InventoryItem tiene un campo quantity
+        int change = movement.getQuantityChange(); // Puede ser positivo (entrada) o negativo (salida)
+
+        int newStock = currentStock + change;
+
+        if (newStock < 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Stock insuficiente. Stock actual: " + currentStock);
+        }
+
+        inventoryItem.setQuantity(newStock);
+        inventoryItemRepository.save(inventoryItem);
+
+        movement.setInventoryItem(inventoryItem);
+        movement.setBalanceAfter(newStock); // <--- GUARDAMOS EL SNAPSHOT
+
+
+
         InventoryMovement createdMovement = movementRepository.save(movement);
-
-
 
         return new ResponseEntity<>(createdMovement, HttpStatus.CREATED);
     }
