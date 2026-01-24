@@ -32,6 +32,9 @@ public class InventoryMovement {
     @Column(name = "balance_after")
     private Integer balanceAfter;
 
+    @Column(name = "warehouse_id")
+    private Long warehouseId;
+
     @NotNull(message = "El tipo de movimiento es obligatorio")
     @Enumerated(EnumType.STRING)
     private MovementType type; 
