@@ -11,13 +11,11 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-
 @Entity
 @Table(name = "inventory_items", uniqueConstraints = {
-
         @UniqueConstraint(columnNames = {"product_id", "warehouse_id", "lotNumber"})
 })
-@Data
+@Data // Lombok generará getQuantity() y setQuantity() automáticamente
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -37,10 +35,13 @@ public class InventoryItem {
     @NotNull(message = "El almacén es obligatorio")
     private Warehouse warehouse;
 
+    // --- CAMBIO CLAVE ---
+    // Renombrado de 'currentStock' a 'quantity' para que Lombok genere
+    // getQuantity() y setQuantity(), solucionando el error en tu Controller.
     @Column(nullable = false)
     @NotNull(message = "El stock actual es obligatorio")
     @PositiveOrZero(message = "El stock no puede ser negativo")
-    private Integer currentStock;
+    private Integer quantity;
 
     @NotNull(message = "El costo unitario es obligatorio")
     @PositiveOrZero(message = "El costo no puede ser negativo")
@@ -50,10 +51,19 @@ public class InventoryItem {
     @Column(nullable = false)
     private String lotNumber;
 
-    private LocalDate expirationDate; 
+    private LocalDate expirationDate;
 
     private String location;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime entryDate = LocalDateTime.now();
+    private LocalDateTime entryDate;
+
+    // Usamos @PrePersist para asegurar que la fecha se asigne antes de guardar
+    // Esto es más seguro que inicializarla en la declaración del campo.
+    @PrePersist
+    protected void onCreate() {
+        if (this.entryDate == null) {
+            this.entryDate = LocalDateTime.now();
+        }
+    }
 }

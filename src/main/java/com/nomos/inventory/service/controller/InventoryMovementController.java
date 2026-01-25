@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Controlador REST para la gestión de Movimientos de Inventario (InventoryMovement).
  * Base URL: /api/v1/inventory-movements

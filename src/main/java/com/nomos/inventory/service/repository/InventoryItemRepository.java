@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface InventoryItemRepository extends JpaRepository<InventoryItem, Long> {
 
     
-    @Query("SELECT SUM(i.currentStock) FROM InventoryItem i WHERE i.product.id = :productId")
+    @Query("SELECT SUM(i.quantity) FROM InventoryItem i WHERE i.product.id = :productId")
     Integer calculateTotalStockByProductId(@Param("productId") Long productId);
 
     

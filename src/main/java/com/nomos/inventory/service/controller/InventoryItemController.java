@@ -94,7 +94,7 @@ public class InventoryItemController {
 
             existingItem.setProduct(productOpt.get());
             existingItem.setWarehouse(warehouseOpt.get());
-            existingItem.setCurrentStock(itemDetails.getCurrentStock());
+            existingItem.setQuantity(itemDetails.getQuantity());
             existingItem.setUnitCost(itemDetails.getUnitCost());
             existingItem.setLotNumber(newLotNumber);
             existingItem.setExpirationDate(itemDetails.getExpirationDate());
