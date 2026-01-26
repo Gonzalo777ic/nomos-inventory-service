@@ -33,3 +33,5 @@ build/
 .vscode/
 **/images/
 
+### Secretos ###
+src/main/resources/application.properties
