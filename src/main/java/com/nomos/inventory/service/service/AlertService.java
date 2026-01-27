@@ -19,5 +19,28 @@ public class AlertService {
     private final ProductRepository productRepository;
     private final AlertRepository alertRepository;
 
+    /**
+     * Obtiene una lista de productos que están por debajo de su umbral de stock mínimo.
+     * Esta información se calcula en tiempo real consultando el stock actual.
+     */
+    public List<StockAlertDTO> getStockAlertsCalculated() {
+
+        List<StockAlertDTO> alerts = productRepository.findProductsWithLowStock();
+
+
+        alerts.forEach(alert -> {
+            if (alert.getCurrentStock() <= 0) {
+                alert.setStatus("CRITICAL");
+            } else {
+                alert.setStatus("LOW");
+            }
+        });
+
+        return alerts;
+    }
+
+
+
+
 
 }
