@@ -63,7 +63,7 @@ public class InventoryMovementController {
      * POST /api/v1/inventory-movements : Registrar un nuevo movimiento.
      */
     @PostMapping
-    @Transactional // Importante: O se guardan ambos o ninguno
+    @Transactional
     public ResponseEntity<InventoryMovement> createMovement(@Valid @RequestBody InventoryMovement movement) {
 
         Long productId = movement.getProduct().getId();
@@ -85,8 +85,8 @@ public class InventoryMovementController {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay inventario inicializado para este producto"));
         }
 
-        int currentStock = inventoryItem.getQuantity(); // Asumo que InventoryItem tiene un campo quantity
-        int change = movement.getQuantityChange(); // Puede ser positivo (entrada) o negativo (salida)
+        int currentStock = inventoryItem.getQuantity();
+        int change = movement.getQuantityChange();
 
         int newStock = currentStock + change;
 
@@ -98,7 +98,7 @@ public class InventoryMovementController {
         inventoryItemRepository.save(inventoryItem);
 
         movement.setInventoryItem(inventoryItem);
-        movement.setBalanceAfter(newStock); // <--- GUARDAMOS EL SNAPSHOT
+        movement.setBalanceAfter(newStock);
 
 
 

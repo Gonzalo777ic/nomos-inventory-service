@@ -21,7 +21,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "p.id, " +
             "p.name, " +
             "p.sku, " +
-            "(SELECT MAX(pi.imageUrl) FROM ProductImage pi WHERE pi.product.id = p.id AND pi.isMain = true), " + // <--- CAMBIO AQUÍ
+            "(SELECT MAX(pi.imageUrl) FROM ProductImage pi WHERE pi.product.id = p.id AND pi.isMain = true), " +
             "CAST(COALESCE(SUM(i.quantity), 0) AS int), " +
             "p.minStockThreshold, " +
             "CAST((p.minStockThreshold - COALESCE(SUM(i.quantity), 0)) AS int), " +
@@ -29,7 +29,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "FROM Product p " +
             "LEFT JOIN InventoryItem i ON i.product.id = p.id " +
             "WHERE p.minStockThreshold IS NOT NULL " +
-            "GROUP BY p.id, p.name, p.sku, p.minStockThreshold " + // Quitamos p.imageUrl del group by
+            "GROUP BY p.id, p.name, p.sku, p.minStockThreshold " +
             "HAVING COALESCE(SUM(i.quantity), 0) <= p.minStockThreshold")
     List<StockAlertDTO> findProductsWithLowStock();
 }

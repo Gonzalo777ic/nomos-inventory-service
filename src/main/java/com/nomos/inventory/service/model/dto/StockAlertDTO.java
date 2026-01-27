@@ -16,6 +16,6 @@ public class StockAlertDTO {
     private String imageUrl;
     private Integer currentStock;
     private Integer minStockThreshold;
-    private Integer deficit; // Cuánto falta para llegar al mínimo (opcional)
-    private String status; // "CRITICAL", "LOW"
+    private Integer deficit;
+    private String status;
 }
