@@ -84,4 +84,21 @@ public class AlertService {
         return alertRepository.save(alert);
     }
 
+    /**
+     * Actualiza el estado de una alerta (ej: de ACTIVE a RESOLVED).
+     */
+    @Transactional
+    public Alert updateStatus(Long id, AlertStatus newStatus) {
+        Alert alert = alertRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Alerta no encontrada con ID: " + id));
+
+        alert.setStatus(newStatus);
+
+        if (newStatus == AlertStatus.RESOLVED) {
+            alert.resolve();
+        }
+
+        return alertRepository.save(alert);
+    }
+
 }
