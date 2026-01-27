@@ -101,4 +101,14 @@ public class AlertService {
         return alertRepository.save(alert);
     }
 
+    /**
+     * Elimina una alerta físicamente de la base de datos.
+     */
+    @Transactional
+    public void deleteAlert(Long id) {
+        if (!alertRepository.existsById(id)) {
+            throw new EntityNotFoundException("No se puede eliminar. Alerta no encontrada con ID: " + id);
+        }
+        alertRepository.deleteById(id);
+    }
 }
