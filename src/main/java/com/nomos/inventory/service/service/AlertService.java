@@ -55,4 +55,11 @@ public class AlertService {
         return alertRepository.findAll();
     }
 
+    /**
+     * Obtiene el historial de alertas de un producto específico.
+     */
+    public List<Alert> getAlertsByProduct(Long productId) {
+        return alertRepository.findByProductIdOrderByCreatedAtDesc(productId);
+    }
+
 }
