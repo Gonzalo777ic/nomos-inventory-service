@@ -62,4 +62,26 @@ public class AlertService {
         return alertRepository.findByProductIdOrderByCreatedAtDesc(productId);
     }
 
+    /**
+     * Crea una nueva alerta manualmente o desde un proceso automático.
+     */
+    @Transactional
+    public Alert createAlert(Alert alert) {
+
+
+        boolean exists = alertRepository.existsByProductIdAndTypeAndStatus(
+                alert.getProduct().getId(),
+                alert.getType(),
+                AlertStatus.ACTIVE
+        );
+
+        if (exists) {
+
+
+            throw new IllegalArgumentException("Ya existe una alerta activa de este tipo para el producto.");
+        }
+
+        return alertRepository.save(alert);
+    }
+
 }
