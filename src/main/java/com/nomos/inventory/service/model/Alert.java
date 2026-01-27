@@ -48,5 +48,18 @@ public class Alert {
 
     private LocalDateTime resolvedAt;
 
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.status == null) {
+            this.status = AlertStatus.ACTIVE;
+        }
+    }
 
+    public void resolve() {
+        this.status = AlertStatus.RESOLVED;
+        this.resolvedAt = LocalDateTime.now();
+    }
 }
