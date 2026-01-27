@@ -1,4 +1,7 @@
 package com.nomos.inventory.service.model;
 
-public class AlertType {
+public enum AlertType {
+
+
+
 }
