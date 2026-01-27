@@ -42,5 +42,17 @@ public class AlertService {
 
 
 
+    /**
+     * Obtiene todas las alertas registradas en la base de datos.
+     * @param status (Opcional) Filtrar por estado (ACTIVE, RESOLVED, DISMISSED)
+     */
+    public List<Alert> getAllAlerts(AlertStatus status) {
+        if (status != null) {
+
+            return alertRepository.findByStatusOrderBySeverityAscCreatedAtDesc(status);
+        }
+
+        return alertRepository.findAll();
+    }
 
 }
