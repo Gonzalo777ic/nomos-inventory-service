@@ -11,4 +11,8 @@ public enum AlertType {
     AlertType(String displayValue) {
         this.displayValue = displayValue;
     }
+
+    public String getDisplayValue() {
+        return displayValue;
+    }
 }
