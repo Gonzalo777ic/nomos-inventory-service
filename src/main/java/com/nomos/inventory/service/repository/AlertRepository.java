@@ -11,5 +11,13 @@ import java.util.List;
 @Repository
 public interface AlertRepository extends JpaRepository<Alert, Long> {
 
+    List<Alert> findByStatusOrderBySeverityAscCreatedAtDesc(AlertStatus status);
 
+    List<Alert> findByProductIdOrderByCreatedAtDesc(Long productId);
+
+    List<Alert> findByTypeAndStatus(AlertType type, AlertStatus status);
+
+    boolean existsByProductIdAndTypeAndStatus(Long productId, AlertType type, AlertStatus status);
+
+    boolean existsByInventoryItemIdAndTypeAndStatus(Long inventoryItemId, AlertType type, AlertStatus status);
 }
