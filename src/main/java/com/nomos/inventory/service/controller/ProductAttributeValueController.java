@@ -2,6 +2,7 @@ package com.nomos.inventory.service.controller;
 
 import com.nomos.inventory.service.model.ProductAttributeValue;
 import com.nomos.inventory.service.model.ProductAttributeValue.ProductAttributeValueId;
+import com.nomos.inventory.service.model.dto.ProductWithAttributeDTO;
 import com.nomos.inventory.service.repository.ProductAttributeValueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -88,5 +89,13 @@ public class ProductAttributeValueController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+
+    @GetMapping("/attribute/{attributeId}/details")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
+    public ResponseEntity<List<ProductWithAttributeDTO>> getProductsByAttributeDetails(@PathVariable Long attributeId) {
+        List<ProductWithAttributeDTO> details = pavRepository.findProductsByAttributeId(attributeId);
+        return ResponseEntity.ok(details);
     }
 }
