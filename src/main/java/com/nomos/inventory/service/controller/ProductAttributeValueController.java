@@ -37,12 +37,6 @@ public class ProductAttributeValueController {
         return ResponseEntity.ok(values);
     }
 
-    @GetMapping("/attribute/{attributeId}")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
-    public ResponseEntity<List<ProductAttributeValue>> getValuesByAttribute(@PathVariable Long attributeId) {
-        List<ProductAttributeValue> values = pavRepository.findByAttributeId(attributeId);
-        return ResponseEntity.ok(values);
-    }
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
