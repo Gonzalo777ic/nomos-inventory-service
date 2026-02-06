@@ -2,6 +2,7 @@ package com.nomos.inventory.service.controller;
 
 import com.nomos.inventory.service.model.ProductAttributeValue;
 import com.nomos.inventory.service.model.ProductAttributeValue.ProductAttributeValueId;
+import com.nomos.inventory.service.model.dto.BulkAttributeValueDTO;
 import com.nomos.inventory.service.model.dto.ProductWithAttributeDTO;
 import com.nomos.inventory.service.repository.ProductAttributeValueRepository;
 import lombok.RequiredArgsConstructor;
@@ -91,5 +92,34 @@ public class ProductAttributeValueController {
     public ResponseEntity<List<ProductWithAttributeDTO>> getProductsByAttributeDetails(@PathVariable Long attributeId) {
         List<ProductWithAttributeDTO> details = pavRepository.findProductsByAttributeId(attributeId);
         return ResponseEntity.ok(details);
+    }
+
+
+    @PostMapping("/bulk")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> bulkAssignAttributes(@RequestBody BulkAttributeValueDTO payload) {
+
+        if (payload.getProductIds() == null || payload.getProductIds().isEmpty()) {
+            return ResponseEntity.badRequest().body("Debe seleccionar al menos un producto.");
+        }
+
+        int successCount = 0;
+        for (Long productId : payload.getProductIds()) {
+            try {
+                ProductAttributeValueId id = new ProductAttributeValueId(productId, payload.getAttributeId());
+
+                ProductAttributeValue pav = new ProductAttributeValue();
+                pav.setProductId(productId);
+                pav.setAttributeId(payload.getAttributeId());
+                pav.setValue(payload.getValue());
+
+                pavRepository.save(pav); /
+                successCount++;
+            } catch (Exception e) {
+                System.err.println("Error asignando a producto " + productId);
+            }
+        }
+
+        return ResponseEntity.ok().body("Atributo asignado correctamente a " + successCount + " productos.");
     }
 }
