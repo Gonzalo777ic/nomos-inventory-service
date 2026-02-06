@@ -113,7 +113,7 @@ public class ProductAttributeValueController {
                 pav.setAttributeId(payload.getAttributeId());
                 pav.setValue(payload.getValue());
 
-                pavRepository.save(pav); /
+                pavRepository.save(pav);
                 successCount++;
             } catch (Exception e) {
                 System.err.println("Error asignando a producto " + productId);
