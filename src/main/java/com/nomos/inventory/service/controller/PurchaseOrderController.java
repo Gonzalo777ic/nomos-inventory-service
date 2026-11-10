@@ -1,11 +1,13 @@
 package com.nomos.inventory.service.controller;
 
-import com.nomos.inventory.service.integration.AuthClient;
 import com.nomos.inventory.service.model.OrderStatus;
 import com.nomos.inventory.service.model.PurchaseOrder;
 import com.nomos.inventory.service.model.Supplier;
 import com.nomos.inventory.service.repository.PurchaseOrderRepository;
 import com.nomos.inventory.service.repository.SupplierRepository;
+import com.valeerp.kernel.DomainException;
+import com.valeerp.procurement.PurchaseReceiptService;
+import com.valeerp.procurement.SupplierAccountService;
 import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
@@ -33,16 +35,19 @@ public class PurchaseOrderController {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final SupplierRepository supplierRepository;
-    private final AuthClient authClient;
+    private final SupplierAccountService supplierAccountService;
+    private final PurchaseReceiptService purchaseReceiptService;
 
     @Autowired
     public PurchaseOrderController(
             PurchaseOrderRepository purchaseOrderRepository,
             SupplierRepository supplierRepository,
-            AuthClient authClient) {
+            SupplierAccountService supplierAccountService,
+            PurchaseReceiptService purchaseReceiptService) {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.supplierRepository = supplierRepository;
-        this.authClient = authClient;
+        this.supplierAccountService = supplierAccountService;
+        this.purchaseReceiptService = purchaseReceiptService;
     }
 
     @GetMapping
@@ -63,21 +68,15 @@ public class PurchaseOrderController {
             return ResponseEntity.ok(purchaseOrderRepository.findAllWithSupplierAndDetailsAndProducts());
         }
 
-        Optional<Long> supplierIdOpt = authClient.getSupplierIdByEmail(currentEmail);
-
-        if (supplierIdOpt.isPresent()) {
-            Long sId = supplierIdOpt.get();
-            List<PurchaseOrder> orders = purchaseOrderRepository.findBySupplierId(sId);
-
-            List<PurchaseOrder> visibleOrders = orders.stream()
-                    .filter(o -> o.getStatus() != OrderStatus.BORRADOR)
-                    .toList();
-
-            return ResponseEntity.ok(visibleOrders);
+        Optional<Long> supplierIdOpt = supplierAccountService.supplierIdOf(currentEmail);
+        if (supplierIdOpt.isEmpty()) {
+            throw new DomainException("El usuario proveedor no tiene una cuenta de abastecimiento vinculada");
         }
-
-        logger.warn("ALERTA: Usuario {} sin perfil. Retornando vacío.", currentEmail);
-        return ResponseEntity.ok(List.of());
+        Long supplierId = supplierIdOpt.get();
+        List<PurchaseOrder> visibleOrders = purchaseOrderRepository.findBySupplierId(supplierId).stream()
+                .filter(order -> order.getStatus() != OrderStatus.BORRADOR)
+                .toList();
+        return ResponseEntity.ok(visibleOrders);
     }
 
     @GetMapping("/{id}")
@@ -103,6 +102,7 @@ public class PurchaseOrderController {
         if (order.getDetails() != null) {
             order.getDetails().forEach(detail -> detail.setPurchaseOrder(order));
         }
+        order.recalculateTotal();
 
         logger.info("Orden BORRADOR creada ID: {}", order.getId());
         return new ResponseEntity<>(purchaseOrderRepository.save(order), HttpStatus.CREATED);
@@ -115,9 +115,7 @@ public class PurchaseOrderController {
         PurchaseOrder existingOrder = purchaseOrderRepository.findByIdWithDetailsAndSupplier(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Orden no encontrada"));
 
-        if (existingOrder.getStatus() == OrderStatus.CANCELADO || existingOrder.getStatus() == OrderStatus.COMPLETO) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se puede editar una orden finalizada.");
-        }
+        existingOrder.assertEditable();
 
         if (orderDetails.getSupplier() != null && !existingOrder.getSupplier().getId().equals(orderDetails.getSupplier().getId())) {
             Supplier newSupplier = supplierRepository.findById(orderDetails.getSupplier().getId())
@@ -127,12 +125,6 @@ public class PurchaseOrderController {
 
         existingOrder.setOrderDate(orderDetails.getOrderDate());
         existingOrder.setDeliveryDate(orderDetails.getDeliveryDate());
-        existingOrder.setTotalAmount(orderDetails.getTotalAmount());
-
-
-
-
-
         existingOrder.getDetails().clear();
         if (orderDetails.getDetails() != null) {
             orderDetails.getDetails().forEach(newDetail -> {
@@ -140,6 +132,7 @@ public class PurchaseOrderController {
                 existingOrder.getDetails().add(newDetail);
             });
         }
+        existingOrder.recalculateTotal();
 
         return ResponseEntity.ok(purchaseOrderRepository.save(existingOrder));
     }
@@ -154,41 +147,19 @@ public class PurchaseOrderController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Orden no encontrada"));
 
         try {
-            OrderStatus newStatusEnum = OrderStatus.valueOf(newStatusStr);
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-            boolean isSupplier = auth.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().toUpperCase().contains("PROVEEDOR") || a.getAuthority().toUpperCase().contains("SUPPLIER"));
-
-            if (isSupplier) {
-
-
-                if (order.getStatus() != OrderStatus.PENDIENTE) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Solo puede responder a órdenes Pendientes.");
-                }
-
-
-                if (newStatusEnum != OrderStatus.CONFIRMADO && newStatusEnum != OrderStatus.RECHAZADO) {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Acción no permitida: Debe Aceptar (Confirmado) o Rechazar.");
-                }
-            } else {
-
-
-                if (order.getStatus() == OrderStatus.BORRADOR && newStatusEnum == OrderStatus.PENDIENTE) {
-                    logger.info("Orden {} enviada al proveedor.", id);
-                }
-
-                if (newStatusEnum == OrderStatus.CANCELADO) {
-                    if (order.getStatus() == OrderStatus.COMPLETO) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se puede cancelar una orden ya completada.");
-                    }
-                }
+            OrderStatus newStatus = OrderStatus.valueOf(newStatusStr);
+            if (newStatus == OrderStatus.COMPLETO) {
+                return ResponseEntity.ok(purchaseReceiptService.receive(id));
             }
-
-            order.setStatus(newStatusEnum);
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            boolean isSupplier = auth.getAuthorities().stream()
+                    .anyMatch(authority -> {
+                        String role = authority.getAuthority().toUpperCase();
+                        return role.contains("PROVEEDOR") || role.contains("SUPPLIER");
+                    });
+            order.requestTransition(newStatus, isSupplier);
             return ResponseEntity.ok(purchaseOrderRepository.save(order));
-
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido.");
         }
     }
@@ -196,10 +167,10 @@ public class PurchaseOrderController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deletePurchaseOrder(@PathVariable Long id) {
-        if (!purchaseOrderRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Orden no encontrada");
-        }
-        purchaseOrderRepository.deleteById(id);
+        PurchaseOrder order = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Orden no encontrada"));
+        order.cancelOpen();
+        purchaseOrderRepository.save(order);
         return ResponseEntity.noContent().build();
     }
 }

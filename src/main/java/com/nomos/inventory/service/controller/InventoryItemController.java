@@ -94,7 +94,10 @@ public class InventoryItemController {
 
             existingItem.setProduct(productOpt.get());
             existingItem.setWarehouse(warehouseOpt.get());
-            existingItem.setQuantity(itemDetails.getQuantity());
+            if (itemDetails.getQuantity() != null && !itemDetails.getQuantity().equals(existingItem.getQuantity())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("La cantidad del lote solo cambia con un movimiento de inventario");
+            }
             existingItem.setUnitCost(itemDetails.getUnitCost());
             existingItem.setLotNumber(newLotNumber);
             existingItem.setExpirationDate(itemDetails.getExpirationDate());
@@ -108,12 +111,14 @@ public class InventoryItemController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
-        if (itemRepository.existsById(id)) {
-            itemRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return itemRepository.findById(id).map(item -> {
+            if (item.getQuantity() != null && item.getQuantity() > 0) {
+                throw new com.valeerp.kernel.DomainException("No se da de baja un lote con existencias. Registre un movimiento");
+            }
+            item.retire(com.valeerp.kernel.Actors.current(), java.time.Instant.now());
+            itemRepository.save(item);
+            return ResponseEntity.noContent().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/product/{productId}/total-stock")

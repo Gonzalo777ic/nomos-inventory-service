@@ -59,16 +59,10 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
-        if (categoryRepository.existsById(id)) {
-
-
-
-
-
-            categoryRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return categoryRepository.findById(id).map(category -> {
+            category.retire(com.valeerp.kernel.Actors.current(), java.time.Instant.now());
+            categoryRepository.save(category);
+            return ResponseEntity.noContent().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

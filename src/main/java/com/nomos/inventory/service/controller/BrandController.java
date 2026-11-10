@@ -66,15 +66,10 @@ public class BrandController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteBrand(@PathVariable Long id) {
-        if (brandRepository.existsById(id)) {
-
-
-
-
-            brandRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return brandRepository.findById(id).map(brand -> {
+            brand.retire(com.valeerp.kernel.Actors.current(), java.time.Instant.now());
+            brandRepository.save(brand);
+            return ResponseEntity.noContent().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

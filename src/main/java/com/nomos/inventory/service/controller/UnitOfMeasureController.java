@@ -58,13 +58,10 @@ public class UnitOfMeasureController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteUnit(@PathVariable Long id) {
-        if (uomRepository.existsById(id)) {
-
-
-            uomRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return uomRepository.findById(id).map(unit -> {
+            unit.retire(com.valeerp.kernel.Actors.current(), java.time.Instant.now());
+            uomRepository.save(unit);
+            return ResponseEntity.noContent().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

@@ -1,32 +1,38 @@
 package com.nomos.inventory.service.model;
 
+import com.valeerp.kernel.DomainException;
+import com.valeerp.kernel.SoftDeletable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Entity
 @Table(name = "products")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
+public class Product extends SoftDeletable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "El SKU es obligatorio")
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String sku;
 
     @NotBlank(message = "El nombre del producto es obligatorio")
@@ -37,8 +43,8 @@ public class Product {
     private Long brandId;
 
     @NotNull(message = "El precio es obligatorio")
-    @Min(value = 0, message = "El precio no puede ser negativo")
-    private Double price;
+    @Setter(lombok.AccessLevel.NONE)
+    private BigDecimal price;
 
     @NotNull(message = "El umbral de stock mínimo es obligatorio")
     @Min(value = 0, message = "El umbral de stock mínimo no puede ser negativo")
@@ -52,18 +58,14 @@ public class Product {
     @Column(name = "unit_of_measure", nullable = false)
     private Long unitOfMeasureId;
 
-    @Transient
-    private String imageUrl;
+    public void changePrice(BigDecimal nextPrice) {
+        if (nextPrice == null || nextPrice.signum() < 0) {
+            throw new DomainException("El precio no puede ser negativo");
+        }
+        this.price = nextPrice.setScale(2, RoundingMode.HALF_UP);
+    }
 
-    @Transient 
-    private String brandName;
-
-    @Transient 
-    private String categoryName;
-
-    @Transient 
-    private String unitOfMeasureName;
-
-    @Transient
-    private String supplierName;
+    public void setPrice(BigDecimal nextPrice) {
+        changePrice(nextPrice);
+    }
 }

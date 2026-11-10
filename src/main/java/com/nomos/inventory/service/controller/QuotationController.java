@@ -3,7 +3,9 @@ package com.nomos.inventory.service.controller;
 import com.nomos.inventory.service.model.*;
 import com.nomos.inventory.service.repository.*;
 import jakarta.transaction.Transactional;
+import com.valeerp.kernel.DomainException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +27,9 @@ public class QuotationController {
     private ProductRepository productRepository;
     @Autowired
     private PurchaseOrderRepository purchaseOrderRepository;
+
+    @Value("${valeerp.procurement.default-lead-days}")
+    private int defaultLeadDays;
 
     @PostMapping
     @Transactional
@@ -88,43 +93,9 @@ public class QuotationController {
     public ResponseEntity<PurchaseOrder> convertToOrder(@PathVariable Long id) {
         Quotation quotation = quotationRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cotización no encontrada"));
-
-        if (quotation.getStatus() == QuotationStatus.CONVERTIDO) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Esta cotización ya fue convertida.");
-        }
-
-        boolean hasUnmappedProducts = quotation.getDetails().stream()
-                .anyMatch(d -> d.getProduct() == null);
-
-        if (hasUnmappedProducts) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "No se puede convertir: Hay productos sugeridos que aún no han sido vinculados al catálogo (Catalogar primero).");
-        }
-
-        PurchaseOrder newOrder = new PurchaseOrder();
-        newOrder.setSupplier(quotation.getSupplier());
-        newOrder.setOrderDate(LocalDate.now());
-        newOrder.setDeliveryDate(LocalDate.now().plusDays(7)); 
-        newOrder.setStatus(OrderStatus.BORRADOR); 
-        Double total = quotation.getTotalEstimated() != null ? quotation.getTotalEstimated() : 0.0;
-        newOrder.setTotalAmount(total);
-        newOrder.setDetails(new ArrayList<>());
-
-        for (QuotationDetail qDetail : quotation.getDetails()) {
-            PurchaseOrderDetail poDetail = new PurchaseOrderDetail();
-            poDetail.setPurchaseOrder(newOrder);
-            poDetail.setProduct(qDetail.getProduct()); 
-            poDetail.setQuantity(qDetail.getQuantity());
-            poDetail.setUnitCost(qDetail.getQuotedPrice() != null ? qDetail.getQuotedPrice() : 0.0);
-
-            newOrder.getDetails().add(poDetail);
-        }
-
-        quotation.setStatus(QuotationStatus.CONVERTIDO);
+        PurchaseOrder order = quotation.toPurchaseOrder(defaultLeadDays);
         quotationRepository.save(quotation);
-
-        PurchaseOrder savedOrder = purchaseOrderRepository.save(newOrder);
-        return ResponseEntity.ok(savedOrder);
+        return ResponseEntity.ok(purchaseOrderRepository.save(order));
     }
 
     @GetMapping

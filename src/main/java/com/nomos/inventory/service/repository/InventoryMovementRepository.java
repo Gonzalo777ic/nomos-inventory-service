@@ -13,6 +13,8 @@ public interface InventoryMovementRepository extends JpaRepository<InventoryMove
     
     List<InventoryMovement> findByProductIdOrderByMovementDateDesc(Long productId);
 
+    List<InventoryMovement> findByReferenceServiceAndReferenceId(String referenceService, Long referenceId);
+
     
     List<InventoryMovement> findByReferenceIdAndReferenceService(Long referenceId, String referenceService);
 }

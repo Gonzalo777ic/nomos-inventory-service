@@ -6,6 +6,8 @@ import com.nomos.inventory.service.model.InventoryMovement;
 import com.nomos.inventory.service.repository.ProductRepository;
 import com.nomos.inventory.service.repository.InventoryItemRepository; 
 import com.nomos.inventory.service.repository.InventoryMovementRepository;
+import com.valeerp.inventory.StockService;
+import com.valeerp.kernel.DomainException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,16 +28,19 @@ public class InventoryMovementController {
 
     private final InventoryMovementRepository movementRepository;
     private final ProductRepository productRepository;
-    private final InventoryItemRepository inventoryItemRepository; 
+    private final InventoryItemRepository inventoryItemRepository;
+    private final StockService stockService;
 
     @Autowired
     public InventoryMovementController(
             InventoryMovementRepository movementRepository,
             ProductRepository productRepository,
-            InventoryItemRepository inventoryItemRepository) {
+            InventoryItemRepository inventoryItemRepository,
+            StockService stockService) {
         this.movementRepository = movementRepository;
         this.productRepository = productRepository;
         this.inventoryItemRepository = inventoryItemRepository;
+        this.stockService = stockService;
     }
 
     /**
@@ -65,46 +70,18 @@ public class InventoryMovementController {
     @PostMapping
     @Transactional
     public ResponseEntity<InventoryMovement> createMovement(@Valid @RequestBody InventoryMovement movement) {
-
-        Long productId = movement.getProduct().getId();
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Producto no existe"));
-        movement.setProduct(product);
-
-
-        InventoryItem inventoryItem = null;
-
-        if (movement.getInventoryItem() != null && movement.getInventoryItem().getId() != null) {
-            inventoryItem = inventoryItemRepository.findById(movement.getInventoryItem().getId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Item de inventario no encontrado"));
-        } else {
-
-
-            inventoryItem = inventoryItemRepository.findByProductId(productId)
-                    .stream().findFirst()
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay inventario inicializado para este producto"));
+        if (movement.getInventoryItem() == null || movement.getInventoryItem().getId() == null) {
+            throw new DomainException("El movimiento debe indicar el lote");
         }
-
-        int currentStock = inventoryItem.getQuantity();
-        int change = movement.getQuantityChange();
-
-        int newStock = currentStock + change;
-
-        if (newStock < 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Stock insuficiente. Stock actual: " + currentStock);
-        }
-
-        inventoryItem.setQuantity(newStock);
-        inventoryItemRepository.save(inventoryItem);
-
-        movement.setInventoryItem(inventoryItem);
-        movement.setBalanceAfter(newStock);
-
-
-
-        InventoryMovement createdMovement = movementRepository.save(movement);
-
-        return new ResponseEntity<>(createdMovement, HttpStatus.CREATED);
+        InventoryMovement created = stockService.adjustLot(
+                movement.getInventoryItem().getId(),
+                movement.getQuantityChange(),
+                movement.getType(),
+                movement.getReason(),
+                movement.getReferenceId(),
+                movement.getReferenceService()
+        );
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     /**

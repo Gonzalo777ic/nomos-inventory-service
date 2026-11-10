@@ -1,5 +1,6 @@
 package com.nomos.inventory.service.model;
 
+import com.valeerp.kernel.SoftDeletable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +14,7 @@ import lombok.AllArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Supplier {
+public class Supplier extends SoftDeletable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

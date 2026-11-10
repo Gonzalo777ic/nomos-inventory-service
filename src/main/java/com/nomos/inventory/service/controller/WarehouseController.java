@@ -91,13 +91,10 @@ public class WarehouseController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteWarehouse(@PathVariable Long id) {
-        if (warehouseRepository.existsById(id)) {
-
-
-            warehouseRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return warehouseRepository.findById(id).map(warehouse -> {
+            warehouse.retire(com.valeerp.kernel.Actors.current(), java.time.Instant.now());
+            warehouseRepository.save(warehouse);
+            return ResponseEntity.noContent().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

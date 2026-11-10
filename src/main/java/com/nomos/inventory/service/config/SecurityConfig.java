@@ -1,5 +1,7 @@
 package com.nomos.inventory.service.config;
 
+import com.valeerp.inventory.IntegrationAuthFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,7 +9,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -23,7 +27,14 @@ import java.util.stream.Collectors;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private static final String ROLES_CLAIM = "https://nomosstore.com/roles";
+    private final String rolesClaim;
+    private final IntegrationAuthFilter integrationAuthFilter;
+
+    public SecurityConfig(@Value("${valeerp.security.roles-claim}") String rolesClaim,
+                          IntegrationAuthFilter integrationAuthFilter) {
+        this.rolesClaim = rolesClaim;
+        this.integrationAuthFilter = integrationAuthFilter;
+    }
 
     /**
      * SOLUCIÓN CRÍTICA: Ignora completamente la ruta de imágenes
@@ -49,15 +60,13 @@ public class SecurityConfig {
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 .authorizeHttpRequests(auth -> auth
-
-
-
-                        .requestMatchers("/api/inventory/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_VENDOR", "ROLE_SUPPLIER")
-
+                        .requestMatchers(HttpMethod.GET, "/api/catalog/**").permitAll()
+                        .requestMatchers("/api/integration/**").hasAuthority("ROLE_INTERNAL")
+                        .requestMatchers("/api/inventory/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_VENDOR", "ROLE_SUPPLIER", "ROLE_CLIENT")
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(integrationAuthFilter, BearerTokenAuthenticationFilter.class)
 
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
@@ -77,7 +86,7 @@ public class SecurityConfig {
 
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            List<String> roles = jwt.getClaimAsStringList(ROLES_CLAIM);
+            List<String> roles = jwt.getClaimAsStringList(rolesClaim);
             if (roles == null) {
                 return Collections.emptyList();
             }

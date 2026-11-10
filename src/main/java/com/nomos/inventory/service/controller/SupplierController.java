@@ -104,13 +104,11 @@ public class SupplierController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSupplier(@PathVariable Long id) {
-        if (!supplierRepository.existsById(id)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Proveedor con ID " + id + " no encontrado para eliminar"
-            );
-        }
-
-        supplierRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return supplierRepository.findById(id).map(supplier -> {
+            supplier.retire(com.valeerp.kernel.Actors.current(), java.time.Instant.now());
+            supplierRepository.save(supplier);
+            return ResponseEntity.noContent().<Void>build();
+        }).orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Proveedor con ID " + id + " no encontrado para dar de baja"));
     }
 }

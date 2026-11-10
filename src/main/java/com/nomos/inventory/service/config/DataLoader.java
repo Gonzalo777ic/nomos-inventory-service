@@ -7,9 +7,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,9 +26,6 @@ public class DataLoader implements CommandLineRunner {
     private final ProductSupplierRepository productSupplierRepository;
     private final WarehouseRepository warehouseRepository;
     private final InventoryItemRepository inventoryItemRepository;
-    private final StoreScheduleRepository storeScheduleRepository;
-    private final AnnouncementRepository announcementRepository;
-    private final ClosureDateRepository closureDateRepository;
 
 
     @Override
@@ -45,9 +42,6 @@ public class DataLoader implements CommandLineRunner {
 
         initializeWarehouses();
         initializeInventory();
-
-        initializeStoreSchedule();
-        initializeAnnouncementsAndClosures();
 
         System.out.println("--- Inicialización completada. ---");
     }
@@ -116,13 +110,13 @@ public class DataLoader implements CommandLineRunner {
             Long uomIdUnidad = uomRepository.findByAbbreviation("Un").orElseThrow().getId();
             Long uomIdMetro = uomRepository.findByAbbreviation("M").orElseThrow().getId();
 
-            Product p1 = new Product(null, "LP12345", "Laptop Core i7 16GB RAM", brandIdIntel, 1200.00, 5, categoryIdPortatiles, uomIdUnidad, null, null, null, null, null);
+            Product p1 = new Product(null, "LP12345", "Laptop Core i7 16GB RAM", brandIdIntel, BigDecimal.valueOf(1200.00), 5, categoryIdPortatiles, uomIdUnidad);
             productRepository.save(p1);
 
-            Product p2 = new Product(null, "MON789", "Monitor LED Curvo 32\"", brandIdSamsung, 450.00, 10, categoryIdMonitores, uomIdUnidad, null, null, null, null, null);
+            Product p2 = new Product(null, "MON789", "Monitor LED Curvo 32\"", brandIdSamsung, BigDecimal.valueOf(450.00), 10, categoryIdMonitores, uomIdUnidad);
             productRepository.save(p2);
 
-            Product p3 = new Product(null, "CBLCAT6", "Cable de Red UTP Cat 6 (por metro)", brandIdGeneric, 1.50, 50, categoryIdRedes, uomIdMetro, null, null, null, null, null);
+            Product p3 = new Product(null, "CBLCAT6", "Cable de Red UTP Cat 6 (por metro)", brandIdGeneric, BigDecimal.valueOf(1.50), 50, categoryIdRedes, uomIdMetro);
             productRepository.save(p3);
 
             productImageRepository.saveAll(Arrays.asList(
@@ -174,36 +168,6 @@ public class DataLoader implements CommandLineRunner {
             inventoryItemRepository.save(new InventoryItem(null, p2, w1, 40, 380.00, "LOTE-M2025", LocalDate.now().plusYears(2), "A1-E5", LocalDateTime.now().minusDays(45)));
 
             inventoryItemRepository.save(new InventoryItem(null, p3, w1, 5000, 0.85, "LOTE-CAT6-1", null, "B1-C4", LocalDateTime.now().minusDays(10)));
-        }
-    }
-
-    private void initializeStoreSchedule() {
-        if (storeScheduleRepository.count() == 0) {
-            storeScheduleRepository.saveAll(Arrays.asList(
-                    new StoreSchedule(null, DayOfWeek.LUNES, LocalTime.of(9, 0), LocalTime.of(18, 0), true),
-                    new StoreSchedule(null, DayOfWeek.MARTES, LocalTime.of(9, 0), LocalTime.of(18, 0), true),
-                    new StoreSchedule(null, DayOfWeek.MIERCOLES, LocalTime.of(9, 0), LocalTime.of(18, 0), true),
-                    new StoreSchedule(null, DayOfWeek.JUEVES, LocalTime.of(9, 0), LocalTime.of(18, 0), true),
-                    new StoreSchedule(null, DayOfWeek.VIERNES, LocalTime.of(9, 0), LocalTime.of(18, 0), true),
-                    new StoreSchedule(null, DayOfWeek.SABADO, LocalTime.of(9, 0), LocalTime.of(13, 0), true),
-                    new StoreSchedule(null, DayOfWeek.DOMINGO, LocalTime.of(0, 0), LocalTime.of(0, 0), false) 
-            ));
-        }
-    }
-
-    private void initializeAnnouncementsAndClosures() {
-        if (announcementRepository.count() == 0) {
-            announcementRepository.saveAll(Arrays.asList(
-                    new Announcement(null, "¡ENVÍO GRATIS!", "Envío gratuito en todos los pedidos superiores a $500 hasta fin de mes.", LocalDateTime.now().minusDays(5), LocalDateTime.now().plusDays(25), AnnouncementType.BANNER, true),
-                    new Announcement(null, "Aviso de Mantenimiento", "Nuestro sitio web estará en mantenimiento el sábado de 00:00 a 06:00.", LocalDateTime.now().plusDays(2), LocalDateTime.now().plusDays(3), AnnouncementType.MODAL, true)
-            ));
-        }
-
-        if (closureDateRepository.count() == 0) {
-            closureDateRepository.saveAll(Arrays.asList(
-                    new ClosureDate(null, LocalDate.now().plusDays(15), "Feriado Nacional", true, null),
-                    new ClosureDate(null, LocalDate.now().plusDays(30), "Inventario Parcial", false, LocalTime.of(14, 0)) 
-            ));
         }
     }
 }
