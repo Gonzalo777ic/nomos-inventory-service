@@ -5,6 +5,7 @@ import com.nomos.inventory.service.repository.CategoryRepository;
 import com.nomos.inventory.service.repository.ProductImageRepository;
 import com.nomos.inventory.service.repository.ProductRepository;
 import com.valeerp.kernel.DomainException;
+import com.valeerp.kernel.Money;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -39,15 +40,36 @@ public class CatalogQueryService {
     }
 
     private CatalogProduct toView(Product product) {
-        String image = imageRepository.findByProductIdAndIsMain(product.getId(), true)
+        String image = imageRepository.findByProductIdAndMainTrue(product.getId())
                 .map(picture -> picture.getImageUrl())
                 .orElse(null);
         String category = categoryRepository.findById(product.getCategoryId())
                 .map(item -> item.getName())
                 .orElse(null);
-        return new CatalogProduct(product.getId(), product.getName(), product.getPrice(), image, category);
+        Money listPrice = product.getListPrice();
+        return new CatalogProduct(
+                product.getId(),
+                product.getName(),
+                product.getSku(),
+                product.getProductType() == null ? null : product.getProductType().name(),
+                product.getBarcode(),
+                listPrice == null ? null : listPrice.amount(),
+                listPrice == null ? null : listPrice.currencyCode(),
+                image,
+                category
+        );
     }
 
-    public record CatalogProduct(Long id, String name, BigDecimal price, String imageUrl, String category) {
+    public record CatalogProduct(
+            Long id,
+            String name,
+            String sku,
+            String productType,
+            String barcode,
+            BigDecimal price,
+            String currency,
+            String imageUrl,
+            String category
+    ) {
     }
 }

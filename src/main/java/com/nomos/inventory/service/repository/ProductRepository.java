@@ -15,11 +15,17 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
 
-    Optional<Product> findBySku(String sku); 
+    Optional<Product> findBySku(String sku);
+
+    Optional<Product> findByBarcode(String barcode);
 
     boolean existsBySku(String sku);
 
     boolean existsBySkuAndIdNot(String sku, Long id);
+
+    boolean existsByBarcode(String barcode);
+
+    boolean existsByBarcodeAndIdNot(String barcode, Long id);
 
     @Query("""
             SELECT p FROM Product p
@@ -32,7 +38,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "p.id, " +
             "p.name, " +
             "p.sku, " +
-            "(SELECT MAX(pi.imageUrl) FROM ProductImage pi WHERE pi.product.id = p.id AND pi.isMain = true), " +
+            "(SELECT MAX(pi.imageUrl) FROM ProductImage pi WHERE pi.productId = p.id AND pi.main = true), " +
             "CAST(COALESCE(SUM(i.quantity), 0) AS int), " +
             "p.minStockThreshold, " +
             "CAST((p.minStockThreshold - COALESCE(SUM(i.quantity), 0)) AS int), " +

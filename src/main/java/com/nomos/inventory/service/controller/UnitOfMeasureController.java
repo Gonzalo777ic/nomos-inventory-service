@@ -1,67 +1,60 @@
 package com.nomos.inventory.service.controller;
 
-import com.nomos.inventory.service.model.UnitOfMeasure;
-import com.nomos.inventory.service.repository.UnitOfMeasureRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import com.valeerp.catalog.CatalogUomDtos.CreateUomRequest;
+import com.valeerp.catalog.CatalogUomDtos.UpdateUomRequest;
+import com.valeerp.catalog.CatalogUomDtos.UomResponse;
+import com.valeerp.catalog.CatalogUomService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
+/**
+ * Fachada legacy. Preferir {@code /api/catalog/units-of-measure}.
+ */
 @RestController
 @RequestMapping("/api/inventory/units-of-measure")
-@RequiredArgsConstructor
 public class UnitOfMeasureController {
 
-    private final UnitOfMeasureRepository uomRepository;
+    private final CatalogUomService catalogUomService;
+
+    public UnitOfMeasureController(CatalogUomService catalogUomService) {
+        this.catalogUomService = catalogUomService;
+    }
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
-    public ResponseEntity<List<UnitOfMeasure>> getAllUnits() {
-        return ResponseEntity.ok(uomRepository.findAll());
+    public List<UomResponse> getAllUnits() {
+        return catalogUomService.listUnits();
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> createUnit(@Valid @RequestBody UnitOfMeasure uom) {
-
-        if (uomRepository.existsByAbbreviation(uom.getAbbreviation())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("La abreviatura '" + uom.getAbbreviation() + "' ya existe.");
-        }
-
-        UnitOfMeasure savedUom = uomRepository.save(uom);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedUom);
+    public UomResponse createUnit(@Valid @RequestBody CreateUomRequest request) {
+        return catalogUomService.createUnit(request);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> updateUnit(@PathVariable Long id, @Valid @RequestBody UnitOfMeasure uomDetails) {
-        return uomRepository.findById(id).map(uom -> {
-
-            if (!uom.getAbbreviation().equals(uomDetails.getAbbreviation()) &&
-                    uomRepository.existsByAbbreviation(uomDetails.getAbbreviation())) {
-
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("La abreviatura '" + uomDetails.getAbbreviation() + "' ya existe y pertenece a otra unidad.");
-            }
-
-            uom.setName(uomDetails.getName());
-            uom.setAbbreviation(uomDetails.getAbbreviation());
-            UnitOfMeasure updatedUom = uomRepository.save(uom);
-            return ResponseEntity.ok(updatedUom);
-        }).orElse(ResponseEntity.notFound().build());
+    public UomResponse updateUnit(@PathVariable Long id, @Valid @RequestBody UpdateUomRequest request) {
+        return catalogUomService.updateUnit(id, request);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Void> deleteUnit(@PathVariable Long id) {
-        return uomRepository.findById(id).map(unit -> {
-            unit.retire(com.valeerp.kernel.Actors.current(), java.time.Instant.now());
-            uomRepository.save(unit);
-            return ResponseEntity.noContent().<Void>build();
-        }).orElse(ResponseEntity.notFound().build());
+    public void deleteUnit(@PathVariable Long id) {
+        catalogUomService.retireUnit(id);
     }
 }

@@ -95,17 +95,24 @@ public class PurchaseOrderController {
         Supplier supplier = supplierRepository.findById(supplierId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Proveedor no existe"));
 
-        order.setSupplier(supplier);
-
-        order.setStatus(OrderStatus.BORRADOR);
-
+        PurchaseOrder draft = PurchaseOrder.draft(
+                supplier,
+                order.getOrderDate(),
+                order.getDeliveryDate());
         if (order.getDetails() != null) {
-            order.getDetails().forEach(detail -> detail.setPurchaseOrder(order));
+            order.getDetails().forEach(detail -> {
+                detail.setPurchaseOrder(draft);
+                if (detail.getReceivedQuantity() == null) {
+                    detail.setReceivedQuantity(0);
+                }
+                draft.getDetails().add(detail);
+            });
         }
-        order.recalculateTotal();
+        draft.recalculateTotal();
 
-        logger.info("Orden BORRADOR creada ID: {}", order.getId());
-        return new ResponseEntity<>(purchaseOrderRepository.save(order), HttpStatus.CREATED);
+        PurchaseOrder saved = purchaseOrderRepository.save(draft);
+        logger.info("Orden BORRADOR creada ID: {}", saved.getId());
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
@@ -129,6 +136,9 @@ public class PurchaseOrderController {
         if (orderDetails.getDetails() != null) {
             orderDetails.getDetails().forEach(newDetail -> {
                 newDetail.setPurchaseOrder(existingOrder);
+                if (newDetail.getReceivedQuantity() == null) {
+                    newDetail.setReceivedQuantity(0);
+                }
                 existingOrder.getDetails().add(newDetail);
             });
         }

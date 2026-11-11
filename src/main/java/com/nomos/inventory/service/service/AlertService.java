@@ -1,114 +1,47 @@
 package com.nomos.inventory.service.service;
 
-import com.nomos.inventory.service.model.Alert;
 import com.nomos.inventory.service.model.AlertStatus;
 import com.nomos.inventory.service.model.dto.StockAlertDTO;
-import com.nomos.inventory.service.repository.AlertRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import com.valeerp.inventory.stock.StockAlertDtos.AlertResponse;
+import com.valeerp.inventory.stock.StockAlertDtos.EvaluationSummary;
+import com.valeerp.inventory.stock.StockAlertService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Fachada legada hacia {@link StockAlertService}. Sin delete físico.
+ */
 @Service
-@RequiredArgsConstructor
 public class AlertService {
 
-    private final ProductRepository productRepository;
-    private final AlertRepository alertRepository;
+    private final StockAlertService stockAlertService;
 
-    /**
-     * Obtiene una lista de productos que están por debajo de su umbral de stock mínimo.
-     * Esta información se calcula en tiempo real consultando el stock actual.
-     */
+    public AlertService(StockAlertService stockAlertService) {
+        this.stockAlertService = stockAlertService;
+    }
+
     public List<StockAlertDTO> getStockAlertsCalculated() {
-
-        List<StockAlertDTO> alerts = productRepository.findProductsWithLowStock();
-
-
-        alerts.forEach(alert -> {
-            if (alert.getCurrentStock() <= 0) {
-                alert.setStatus("CRITICAL");
-            } else {
-                alert.setStatus("LOW");
-            }
-        });
-
-        return alerts;
+        return stockAlertService.calculateLowStockLegacy();
     }
 
-
-
-
-    /**
-     * Obtiene todas las alertas registradas en la base de datos.
-     * @param status (Opcional) Filtrar por estado (ACTIVE, RESOLVED, DISMISSED)
-     */
-    public List<Alert> getAllAlerts(AlertStatus status) {
-        if (status != null) {
-
-            return alertRepository.findByStatusOrderBySeverityAscCreatedAtDesc(status);
-        }
-
-        return alertRepository.findAll();
+    public List<AlertResponse> getAllAlerts(AlertStatus status) {
+        return stockAlertService.list(status);
     }
 
-    /**
-     * Obtiene el historial de alertas de un producto específico.
-     */
-    public List<Alert> getAlertsByProduct(Long productId) {
-        return alertRepository.findByProductIdOrderByCreatedAtDesc(productId);
+    public List<AlertResponse> getAlertsByProduct(Long productId) {
+        return stockAlertService.byProduct(productId);
     }
 
-    /**
-     * Crea una nueva alerta manualmente o desde un proceso automático.
-     */
-    @Transactional
-    public Alert createAlert(Alert alert) {
-
-
-        boolean exists = alertRepository.existsByProductIdAndTypeAndStatus(
-                alert.getProduct().getId(),
-                alert.getType(),
-                AlertStatus.ACTIVE
-        );
-
-        if (exists) {
-
-
-            throw new IllegalArgumentException("Ya existe una alerta activa de este tipo para el producto.");
-        }
-
-        return alertRepository.save(alert);
+    public EvaluationSummary evaluate() {
+        return stockAlertService.evaluateAndPersist();
     }
 
-    /**
-     * Actualiza el estado de una alerta (ej: de ACTIVE a RESOLVED).
-     */
-    @Transactional
-    public Alert updateStatus(Long id, AlertStatus newStatus) {
-        Alert alert = alertRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Alerta no encontrada con ID: " + id));
-
-        alert.setStatus(newStatus);
-
-        if (newStatus == AlertStatus.RESOLVED) {
-            alert.resolve();
-        }
-
-        return alertRepository.save(alert);
+    public AlertResponse resolve(Long id) {
+        return stockAlertService.resolve(id);
     }
 
-    /**
-     * Elimina una alerta físicamente de la base de datos.
-     */
-    @Transactional
-    public void deleteAlert(Long id) {
-        if (!alertRepository.existsById(id)) {
-            throw new EntityNotFoundException("No se puede eliminar. Alerta no encontrada con ID: " + id);
-        }
-        alertRepository.deleteById(id);
+    public AlertResponse dismiss(Long id) {
+        return stockAlertService.dismiss(id);
     }
 }

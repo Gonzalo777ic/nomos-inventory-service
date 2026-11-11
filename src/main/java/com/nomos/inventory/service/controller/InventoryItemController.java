@@ -1,135 +1,60 @@
 package com.nomos.inventory.service.controller;
 
-import com.nomos.inventory.service.model.InventoryItem;
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.Warehouse;
-import com.nomos.inventory.service.repository.InventoryItemRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.WarehouseRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import com.valeerp.inventory.QuantQueryService;
+import com.valeerp.inventory.StockDtos.OpenQuantRequest;
+import com.valeerp.inventory.StockDtos.QuantResponse;
+import com.valeerp.inventory.StockDtos.UpdateQuantRequest;
 import jakarta.validation.Valid;
-import java.util.List;
-import java.util.Optional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
+/**
+ * Quants (lotes/series). No hay PUT de cantidad: solo metadatos; la cantidad cambia vía movimientos.
+ */
 @RestController
 @RequestMapping("/api/inventory/items")
-@RequiredArgsConstructor
 public class InventoryItemController {
 
-    private final InventoryItemRepository itemRepository;
-    private final ProductRepository productRepository;
-    private final WarehouseRepository warehouseRepository; 
+    private final QuantQueryService quantQueryService;
+
+    public InventoryItemController(QuantQueryService quantQueryService) {
+        this.quantQueryService = quantQueryService;
+    }
 
     @GetMapping("/product/{productId}")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER', 'ROLE_AUDITOR')")
-    public ResponseEntity<List<InventoryItem>> getItemsByProduct(@PathVariable Long productId) {
-        if (!productRepository.existsById(productId)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(itemRepository.findByProductId(productId));
-    }
-
-    @PostMapping
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPPLIER')")
-    public ResponseEntity<?> createItem(@Valid @RequestBody InventoryItem item) {
-
-        Long productId = item.getProduct().getId();
-        Long warehouseId = item.getWarehouse().getId();
-        String lotNumber = item.getLotNumber();
-
-        Optional<Product> productOpt = productRepository.findById(productId);
-        Optional<Warehouse> warehouseOpt = warehouseRepository.findById(warehouseId);
-
-        if (productOpt.isEmpty() || warehouseOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("El Producto o el Almacén referenciado no existen.");
-        }
-
-        if (itemRepository.findByProductIdAndWarehouseIdAndLotNumber(productId, warehouseId, lotNumber).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Ya existe un lote con número '" + lotNumber +
-                            "' para el producto " + productId + " en el almacén " + warehouseId + ".");
-        }
-
-        item.setProduct(productOpt.get());
-        item.setWarehouse(warehouseOpt.get());
-
-        InventoryItem savedItem = itemRepository.save(item);
-        return new ResponseEntity<>(savedItem, HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> updateItem(@PathVariable Long id, @Valid @RequestBody InventoryItem itemDetails) {
-        return itemRepository.findById(id).map(existingItem -> {
-
-            Long newProductId = itemDetails.getProduct().getId();
-            Long newWarehouseId = itemDetails.getWarehouse().getId();
-            String newLotNumber = itemDetails.getLotNumber();
-
-            Optional<Product> productOpt = productRepository.findById(newProductId);
-            Optional<Warehouse> warehouseOpt = warehouseRepository.findById(newWarehouseId);
-
-            if (productOpt.isEmpty() || warehouseOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body("El Producto o el Almacén referenciado no existen.");
-            }
-
-            if (!newProductId.equals(existingItem.getProduct().getId()) ||
-                    !newWarehouseId.equals(existingItem.getWarehouse().getId()) ||
-                    !newLotNumber.equals(existingItem.getLotNumber())) {
-
-                Optional<InventoryItem> conflict = itemRepository.findByProductIdAndWarehouseIdAndLotNumber(newProductId, newWarehouseId, newLotNumber);
-
-                if (conflict.isPresent() && !conflict.get().getId().equals(id)) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT)
-                            .body("El nuevo lote '" + newLotNumber +
-                                    "' ya existe para el producto " + newProductId + " en el almacén " + newWarehouseId + ".");
-                }
-            }
-
-            existingItem.setProduct(productOpt.get());
-            existingItem.setWarehouse(warehouseOpt.get());
-            if (itemDetails.getQuantity() != null && !itemDetails.getQuantity().equals(existingItem.getQuantity())) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("La cantidad del lote solo cambia con un movimiento de inventario");
-            }
-            existingItem.setUnitCost(itemDetails.getUnitCost());
-            existingItem.setLotNumber(newLotNumber);
-            existingItem.setExpirationDate(itemDetails.getExpirationDate());
-            existingItem.setLocation(itemDetails.getLocation());
-
-            InventoryItem updatedItem = itemRepository.save(existingItem);
-            return ResponseEntity.ok(updatedItem);
-        }).orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
-        return itemRepository.findById(id).map(item -> {
-            if (item.getQuantity() != null && item.getQuantity() > 0) {
-                throw new com.valeerp.kernel.DomainException("No se da de baja un lote con existencias. Registre un movimiento");
-            }
-            item.retire(com.valeerp.kernel.Actors.current(), java.time.Instant.now());
-            itemRepository.save(item);
-            return ResponseEntity.noContent().<Void>build();
-        }).orElse(ResponseEntity.notFound().build());
+    public List<QuantResponse> getItemsByProduct(@PathVariable Long productId) {
+        return quantQueryService.listByProduct(productId);
     }
 
     @GetMapping("/product/{productId}/total-stock")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER', 'ROLE_AUDITOR')")
-    @Transactional(readOnly = true)
-    public ResponseEntity<Integer> getTotalStockByProduct(@PathVariable Long productId) {
-        if (!productRepository.existsById(productId)) {
-            return ResponseEntity.notFound().build();
-        }
+    public Integer getTotalStockByProduct(@PathVariable Long productId) {
+        return quantQueryService.totalStock(productId);
+    }
 
-        Integer totalStock = itemRepository.calculateTotalStockByProductId(productId);
-        return ResponseEntity.ok(totalStock != null ? totalStock : 0);
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public QuantResponse createItem(@Valid @RequestBody OpenQuantRequest request) {
+        return quantQueryService.openEmpty(request);
+    }
+
+    @PutMapping("/{id}")
+    public QuantResponse updateItem(@PathVariable Long id, @Valid @RequestBody UpdateQuantRequest request) {
+        return quantQueryService.updateMetadata(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteItem(@PathVariable Long id) {
+        quantQueryService.retireEmpty(id);
     }
 }

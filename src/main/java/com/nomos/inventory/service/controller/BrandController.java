@@ -1,75 +1,64 @@
 package com.nomos.inventory.service.controller;
 
-import com.nomos.inventory.service.model.Brand;
-import com.nomos.inventory.service.repository.BrandRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import com.valeerp.catalog.BrandDtos.BrandResponse;
+import com.valeerp.catalog.BrandDtos.CreateBrandRequest;
+import com.valeerp.catalog.BrandDtos.UpdateBrandRequest;
+import com.valeerp.catalog.BrandService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/masters/brands")
-@RequiredArgsConstructor
 public class BrandController {
 
-    private final BrandRepository brandRepository;
+    private final BrandService brandService;
+
+    public BrandController(BrandService brandService) {
+        this.brandService = brandService;
+    }
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
-    public ResponseEntity<List<Brand>> getAllBrands() {
-        return ResponseEntity.ok(brandRepository.findAll());
+    public List<BrandResponse> getAllBrands() {
+        return brandService.listAll();
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
+    public BrandResponse getBrand(@PathVariable Long id) {
+        return brandService.get(id);
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> createBrand(@Valid @RequestBody Brand brand) {
-        if (brandRepository.existsByName(brand.getName())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Ya existe una marca con el nombre '" + brand.getName() + "'.");
-        }
-        if (brandRepository.existsByCode(brand.getCode())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Ya existe una marca con el código '" + brand.getCode() + "'.");
-        }
-        Brand savedBrand = brandRepository.save(brand);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedBrand);
+    public BrandResponse createBrand(@Valid @RequestBody CreateBrandRequest request) {
+        return brandService.create(request);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> updateBrand(@PathVariable Long id, @Valid @RequestBody Brand brandDetails) {
-        return brandRepository.findById(id).map(brand -> {
-
-            if (brandRepository.existsByNameAndIdNot(brandDetails.getName(), id)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("Ya existe otra marca con el nombre '" + brandDetails.getName() + "'.");
-            }
-
-            if (brandRepository.existsByCodeAndIdNot(brandDetails.getCode(), id)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("Ya existe otra marca con el código '" + brandDetails.getCode() + "'.");
-            }
-
-            brand.setName(brandDetails.getName());
-            brand.setCode(brandDetails.getCode());
-            brand.setWebsite(brandDetails.getWebsite());
-            brand.setLogoUrl(brandDetails.getLogoUrl());
-
-            Brand updatedBrand = brandRepository.save(brand);
-            return ResponseEntity.ok(updatedBrand);
-        }).orElse(ResponseEntity.notFound().build());
+    public BrandResponse updateBrand(@PathVariable Long id,
+                                     @Valid @RequestBody UpdateBrandRequest request) {
+        return brandService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Void> deleteBrand(@PathVariable Long id) {
-        return brandRepository.findById(id).map(brand -> {
-            brand.retire(com.valeerp.kernel.Actors.current(), java.time.Instant.now());
-            brandRepository.save(brand);
-            return ResponseEntity.noContent().<Void>build();
-        }).orElse(ResponseEntity.notFound().build());
+    public void retireBrand(@PathVariable Long id) {
+        brandService.retire(id);
     }
 }

@@ -1,100 +1,73 @@
 package com.nomos.inventory.service.controller;
 
-import com.nomos.inventory.service.model.Warehouse;
-import com.nomos.inventory.service.repository.WarehouseRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import com.valeerp.inventory.WarehouseDtos.CreateWarehouseRequest;
+import com.valeerp.inventory.WarehouseDtos.UpdateWarehouseRequest;
+import com.valeerp.inventory.WarehouseDtos.WarehouseResponse;
+import com.valeerp.inventory.WarehouseService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/inventory/warehouses")
-@RequiredArgsConstructor
 public class WarehouseController {
 
-    private final WarehouseRepository warehouseRepository;
+    private final WarehouseService warehouseService;
+
+    public WarehouseController(WarehouseService warehouseService) {
+        this.warehouseService = warehouseService;
+    }
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER', 'ROLE_AUDITOR')")
-    public ResponseEntity<List<Warehouse>> getAllWarehouses() {
-        return ResponseEntity.ok(warehouseRepository.findAll());
+    public List<WarehouseResponse> list(
+            @RequestParam(required = false) Long companyId,
+            @RequestParam(required = false) Long branchId) {
+        if (companyId != null && branchId != null) {
+            return warehouseService.listByCompanyAndBranch(companyId, branchId);
+        }
+        if (companyId != null) {
+            return warehouseService.listByCompany(companyId);
+        }
+        return warehouseService.listAll();
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER', 'ROLE_AUDITOR')")
-    public ResponseEntity<Warehouse> getWarehouseById(@PathVariable Long id) {
-        return warehouseRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public WarehouseResponse get(@PathVariable Long id) {
+        return warehouseService.get(id);
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> createWarehouse(@Valid @RequestBody Warehouse warehouse) {
-        if (warehouseRepository.existsByName(warehouse.getName())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Ya existe un almacén con el nombre: " + warehouse.getName());
-        }
-
-        if (warehouse.getIsMain()) {
-
-            Optional<Warehouse> currentMain = warehouseRepository.findByIsMainTrue();
-            currentMain.ifPresent(main -> {
-                main.setIsMain(false);
-                warehouseRepository.save(main);
-            });
-        }
-
-        Warehouse savedWarehouse = warehouseRepository.save(warehouse);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedWarehouse);
+    public WarehouseResponse create(@Valid @RequestBody CreateWarehouseRequest request) {
+        return warehouseService.create(request);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> updateWarehouse(@PathVariable Long id, @Valid @RequestBody Warehouse warehouseDetails) {
-        return warehouseRepository.findById(id).map(warehouse -> {
-
-            if (!warehouse.getName().equals(warehouseDetails.getName()) && warehouseRepository.existsByName(warehouseDetails.getName())) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("Ya existe otro almacén con el nombre: " + warehouseDetails.getName());
-            }
-
-            if (warehouseDetails.getIsMain() && !warehouse.getIsMain()) {
-
-                Optional<Warehouse> currentMain = warehouseRepository.findByIsMainTrue();
-                currentMain.ifPresent(main -> {
-                    if (!main.getId().equals(warehouse.getId())) {
-                        main.setIsMain(false);
-                        warehouseRepository.save(main);
-                    }
-                });
-            } else if (!warehouseDetails.getIsMain() && warehouse.getIsMain()) {
-
-
-
-
-            }
-
-            warehouse.setName(warehouseDetails.getName());
-            warehouse.setLocationAddress(warehouseDetails.getLocationAddress());
-            warehouse.setIsMain(warehouseDetails.getIsMain());
-
-            Warehouse updatedWarehouse = warehouseRepository.save(warehouse);
-            return ResponseEntity.ok(updatedWarehouse);
-        }).orElse(ResponseEntity.notFound().build());
+    public WarehouseResponse update(@PathVariable Long id,
+                                    @Valid @RequestBody UpdateWarehouseRequest request) {
+        return warehouseService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Void> deleteWarehouse(@PathVariable Long id) {
-        return warehouseRepository.findById(id).map(warehouse -> {
-            warehouse.retire(com.valeerp.kernel.Actors.current(), java.time.Instant.now());
-            warehouseRepository.save(warehouse);
-            return ResponseEntity.noContent().<Void>build();
-        }).orElse(ResponseEntity.notFound().build());
+    public void retire(@PathVariable Long id) {
+        warehouseService.retire(id);
     }
 }

@@ -1,95 +1,61 @@
 package com.nomos.inventory.service.controller;
 
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.InventoryItem; 
-import com.nomos.inventory.service.model.InventoryMovement;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.InventoryItemRepository; 
-import com.nomos.inventory.service.repository.InventoryMovementRepository;
-import com.valeerp.inventory.StockService;
-import com.valeerp.kernel.DomainException;
+import com.valeerp.inventory.MovementQueryService;
+import com.valeerp.inventory.StockDtos.CreateMovementRequest;
+import com.valeerp.inventory.StockDtos.MovementResponse;
+import com.valeerp.inventory.StockDtos.NamedLotMovementRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Controlador REST para la gestión de Movimientos de Inventario (InventoryMovement).
- * Base URL: /api/v1/inventory-movements
- */
 @RestController
 @RequestMapping("/api/v1/inventory-movements")
 public class InventoryMovementController {
 
-    private final InventoryMovementRepository movementRepository;
-    private final ProductRepository productRepository;
-    private final InventoryItemRepository inventoryItemRepository;
-    private final StockService stockService;
+    private final MovementQueryService movementQueryService;
 
-    @Autowired
-    public InventoryMovementController(
-            InventoryMovementRepository movementRepository,
-            ProductRepository productRepository,
-            InventoryItemRepository inventoryItemRepository,
-            StockService stockService) {
-        this.movementRepository = movementRepository;
-        this.productRepository = productRepository;
-        this.inventoryItemRepository = inventoryItemRepository;
-        this.stockService = stockService;
+    public InventoryMovementController(MovementQueryService movementQueryService) {
+        this.movementQueryService = movementQueryService;
     }
 
-    /**
-     * GET /api/v1/inventory-movements : Obtener todos los movimientos de inventario.
-     */
     @GetMapping
-    public ResponseEntity<List<InventoryMovement>> getAllMovements() {
-        List<InventoryMovement> movements = movementRepository.findAll();
-        return ResponseEntity.ok(movements);
+    public List<MovementResponse> getAllMovements() {
+        return movementQueryService.listAll();
     }
 
-    /**
-     * GET /api/v1/inventory-movements/{id} : Obtener un movimiento por su ID.
-     */
     @GetMapping("/{id}")
-    public ResponseEntity<InventoryMovement> getMovementById(@PathVariable Long id) {
-        InventoryMovement movement = movementRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Movimiento de Inventario con ID " + id + " no encontrado")
-                );
-        return ResponseEntity.ok(movement);
+    public MovementResponse getMovementById(@PathVariable Long id) {
+        return movementQueryService.get(id);
     }
 
-    /**
-     * POST /api/v1/inventory-movements : Registrar un nuevo movimiento.
-     */
     @PostMapping
-    @Transactional
-    public ResponseEntity<InventoryMovement> createMovement(@Valid @RequestBody InventoryMovement movement) {
-        if (movement.getInventoryItem() == null || movement.getInventoryItem().getId() == null) {
-            throw new DomainException("El movimiento debe indicar el lote");
-        }
-        InventoryMovement created = stockService.adjustLot(
-                movement.getInventoryItem().getId(),
-                movement.getQuantityChange(),
-                movement.getType(),
-                movement.getReason(),
-                movement.getReferenceId(),
-                movement.getReferenceService()
-        );
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    @ResponseStatus(HttpStatus.CREATED)
+    public MovementResponse createMovement(@Valid @RequestBody CreateMovementRequest request) {
+        return movementQueryService.create(request);
     }
 
-    /**
-     * GET /api/v1/inventory-movements/product/{productId} : Obtener trazabilidad por producto.
-     */
+    @PostMapping("/receive")
+    @ResponseStatus(HttpStatus.CREATED)
+    public MovementResponse receive(@Valid @RequestBody NamedLotMovementRequest request) {
+        return movementQueryService.receiveNamed(request);
+    }
+
+    @PostMapping("/issue")
+    @ResponseStatus(HttpStatus.CREATED)
+    public MovementResponse issue(@Valid @RequestBody NamedLotMovementRequest request) {
+        return movementQueryService.issueNamed(request);
+    }
+
     @GetMapping("/product/{productId}")
-    public ResponseEntity<List<InventoryMovement>> getMovementsByProduct(@PathVariable Long productId) {
-        List<InventoryMovement> movements = movementRepository.findByProductIdOrderByMovementDateDesc(productId);
-        return ResponseEntity.ok(movements);
+    public List<MovementResponse> getMovementsByProduct(@PathVariable Long productId) {
+        return movementQueryService.byProduct(productId);
     }
 }

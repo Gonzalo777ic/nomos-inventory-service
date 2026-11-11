@@ -8,16 +8,24 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-
 public interface InventoryItemRepository extends JpaRepository<InventoryItem, Long> {
 
-    
     @Query("SELECT SUM(i.quantity) FROM InventoryItem i WHERE i.product.id = :productId")
     Integer calculateTotalStockByProductId(@Param("productId") Long productId);
 
-    
     List<InventoryItem> findByProductId(Long productId);
 
-    
-    Optional<InventoryItem> findByProductIdAndWarehouseIdAndLotNumber(Long productId, Long warehouseId, String lotNumber);
+    List<InventoryItem> findByProductIdAndWarehouseId(Long productId, Long warehouseId);
+
+    Optional<InventoryItem> findByProductIdAndWarehouseIdAndInternalLocationIdAndLotNumberAndSerialNumber(
+            Long productId,
+            Long warehouseId,
+            Long internalLocationId,
+            String lotNumber,
+            String serialNumber
+    );
+
+    /** Compatibilidad con código que aún no nombra ubicación/serie. */
+    Optional<InventoryItem> findByProductIdAndWarehouseIdAndLotNumber(
+            Long productId, Long warehouseId, String lotNumber);
 }

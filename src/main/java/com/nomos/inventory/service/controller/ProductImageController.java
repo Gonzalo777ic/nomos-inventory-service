@@ -1,177 +1,81 @@
 package com.nomos.inventory.service.controller;
 
-import com.nomos.inventory.service.model.ProductImage;
-import com.nomos.inventory.service.repository.ProductImageRepository;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import com.valeerp.catalog.ProductMediaDtos.AttachFileRequest;
+import com.valeerp.catalog.ProductMediaDtos.AttachImageRequest;
+import com.valeerp.catalog.ProductMediaDtos.AttachmentResponse;
+import com.valeerp.catalog.ProductMediaDtos.ImageResponse;
+import com.valeerp.catalog.ProductMediaService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
-import java.util.UUID;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.io.IOException;
 
-
+/**
+ * Metadatos de imagen/adjunto. No sube bytes a storage externo: solo persiste path/URL/MIME/size.
+ */
 @RestController
 @RequestMapping("/api/inventory/product-images")
-
 public class ProductImageController {
 
-    private final ProductImageRepository imageRepository;
+    private final ProductMediaService productMediaService;
 
-
-    private final Path fileStorageLocation = Paths.get("uploads/images/").toAbsolutePath().normalize();
-
-
-    private final String imagePublicPath = "/images/";
-
-    private final String baseUrl;
-
-    public ProductImageController(
-            ProductImageRepository imageRepository,
-            @Value("${server.base-url:http://localhost:8080}") String baseUrl) {
-
-        this.imageRepository = imageRepository;
-        this.baseUrl = baseUrl;
-
-        try {
-            Files.createDirectories(this.fileStorageLocation);
-        } catch (Exception ex) {
-
-            throw new RuntimeException("Error al inicializar el directorio de almacenamiento de imágenes.", ex);
-        }
+    public ProductImageController(ProductMediaService productMediaService) {
+        this.productMediaService = productMediaService;
     }
-
-    /**
-     * Guarda el archivo físicamente en 'uploads/images/' y devuelve la URL pública completa.
-     * @param file El archivo MultipartFile.
-     * @return La URL pública completa (ej: http://localhost:8080/images/unique-id.png).
-     */
-    private String storeFile(MultipartFile file) throws IOException {
-        String originalFilename = file.getOriginalFilename();
-        String fileExtension = "";
-
-        if (originalFilename != null && originalFilename.contains(".")) {
-            fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
-
-        String uniqueFilename = UUID.randomUUID().toString() + fileExtension;
-
-        if (uniqueFilename.contains("..")) {
-            throw new IOException("El nombre del archivo contiene una secuencia de ruta inválida.");
-        }
-
-        Path targetLocation = this.fileStorageLocation.resolve(uniqueFilename);
-        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-        return this.baseUrl + this.imagePublicPath + uniqueFilename;
-    }
-
-
-
 
     @GetMapping("/product/{productId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
-    public ResponseEntity<List<ProductImage>> getImagesByProduct(@PathVariable Long productId) {
-        List<ProductImage> images = imageRepository.findByProductIdOrderBySortOrderAsc(productId);
-        return ResponseEntity.ok(images);
+    public List<ImageResponse> getImagesByProduct(@PathVariable Long productId) {
+        return productMediaService.listImages(productId);
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<ProductImage> addProductImage(@Valid @RequestBody ProductImage image) {
-
-        if (image.getIsMain() != null && image.getIsMain()) {
-
-            imageRepository.findByProductIdAndIsMain(image.getProductId(), true)
-                    .ifPresent(mainImg -> {
-                        mainImg.setIsMain(false);
-                        imageRepository.save(mainImg);
-                    });
-        }
-
-        ProductImage savedImage = imageRepository.save(image);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedImage);
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<Void> deleteProductImage(@PathVariable Long id) {
-        if (imageRepository.existsById(id)) {
-            imageRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-
-    @PostMapping("/upload")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-
-    public ResponseEntity<ProductImage> uploadProductImage(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("productId") Long productId) {
-
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        String imageUrl;
-        try {
-
-            imageUrl = storeFile(file);
-        } catch (IOException e) {
-            System.err.println("Error al guardar el archivo: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        } catch (RuntimeException e) {
-            System.err.println("Error al procesar el archivo: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-
-        ProductImage newImage = new ProductImage();
-        newImage.setProductId(productId);
-        newImage.setImageUrl(imageUrl); 
-        newImage.setSortOrder(99);
-
-        long imageCount = imageRepository.countByProductId(productId);
-        boolean isFirstImage = imageCount == 0;
-        newImage.setIsMain(isFirstImage);
-
-        if (!isFirstImage) {
-
-            imageRepository.findByProductIdAndIsMain(productId, true)
-                    .ifPresent(mainImg -> {
-                        mainImg.setIsMain(false);
-                        imageRepository.save(mainImg); 
-                    });
-        }
-
-        ProductImage savedImage = imageRepository.save(newImage); 
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedImage);
+    public ImageResponse addProductImage(@Valid @RequestBody AttachImageRequest request) {
+        return productMediaService.attachImage(request);
     }
 
     @PostMapping("/add-url")
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<ProductImage> addProductImageFromUrl(@RequestBody ProductImage urlData) {
+    public ImageResponse addProductImageFromUrl(@Valid @RequestBody AttachImageRequest request) {
+        return productMediaService.attachImage(request);
+    }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public void retireProductImage(@PathVariable Long id) {
+        productMediaService.retireImage(id);
+    }
 
-        if (urlData.getIsMain() != null && urlData.getIsMain()) {
-            imageRepository.findByProductIdAndIsMain(urlData.getProductId(), true)
-                    .ifPresent(mainImg -> {
-                        mainImg.setIsMain(false);
-                        imageRepository.save(mainImg);
-                    });
-        }
+    @GetMapping("/product/{productId}/attachments")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_SUPPLIER')")
+    public List<AttachmentResponse> listAttachments(@PathVariable Long productId) {
+        return productMediaService.listAttachments(productId);
+    }
 
-        ProductImage savedImage = imageRepository.save(urlData);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedImage);
+    @PostMapping("/attachments")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public AttachmentResponse attachFile(@Valid @RequestBody AttachFileRequest request) {
+        return productMediaService.attachFile(request);
+    }
+
+    @DeleteMapping("/attachments/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public void retireAttachment(@PathVariable Long id) {
+        productMediaService.retireAttachment(id);
     }
 }
