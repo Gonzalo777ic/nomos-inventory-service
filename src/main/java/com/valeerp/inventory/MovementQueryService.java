@@ -1,7 +1,7 @@
 package com.valeerp.inventory;
 
-import com.nomos.inventory.service.model.InventoryMovement;
-import com.nomos.inventory.service.repository.InventoryMovementRepository;
+import com.valeerp.inventory.service.model.InventoryMovement;
+import com.valeerp.inventory.service.repository.InventoryMovementRepository;
 import com.valeerp.inventory.StockDtos.CreateMovementRequest;
 import com.valeerp.inventory.StockDtos.MovementResponse;
 import com.valeerp.inventory.StockDtos.NamedLotMovementRequest;

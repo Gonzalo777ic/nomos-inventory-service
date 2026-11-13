@@ -8,11 +8,11 @@
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.2</version> <relativePath/> </parent>
 
-    <groupId>com.nomos.inventory</groupId>
-    <artifactId>nomos-inventory-service</artifactId>
+    <groupId>com.valeerp</groupId>
+    <artifactId>valeerp-inventory</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>nomos-inventory-service</name>
-    <description>nomos-inventory-service</description>
+    <name>ValeERP Inventory</name>
+    <description>Catálogo, inventario y abastecimiento de ValeERP</description>
 
     <properties>
         <java.version>17</java.version>

@@ -1,7 +1,7 @@
 package com.valeerp.procurement;
 
-import com.nomos.inventory.service.model.Quotation;
-import com.nomos.inventory.service.model.QuotationDetail;
+import com.valeerp.inventory.service.model.Quotation;
+import com.valeerp.inventory.service.model.QuotationDetail;
 import com.valeerp.kernel.Currency;
 import com.valeerp.kernel.DomainException;
 import com.valeerp.kernel.Money;

@@ -1,11 +1,11 @@
 package com.valeerp.procurement;
 
-import com.nomos.inventory.service.model.InventoryItem;
-import com.nomos.inventory.service.model.MovementType;
-import com.nomos.inventory.service.model.OrderStatus;
-import com.nomos.inventory.service.model.PurchaseOrder;
-import com.nomos.inventory.service.repository.InventoryItemRepository;
-import com.nomos.inventory.service.repository.PurchaseOrderRepository;
+import com.valeerp.inventory.service.model.InventoryItem;
+import com.valeerp.inventory.service.model.MovementType;
+import com.valeerp.inventory.service.model.OrderStatus;
+import com.valeerp.inventory.service.model.PurchaseOrder;
+import com.valeerp.inventory.service.repository.InventoryItemRepository;
+import com.valeerp.inventory.service.repository.PurchaseOrderRepository;
 import com.valeerp.inventory.StockService;
 import com.valeerp.kernel.DomainException;
 import com.valeerp.procurement.VendorReturnDtos.CreateRequest;

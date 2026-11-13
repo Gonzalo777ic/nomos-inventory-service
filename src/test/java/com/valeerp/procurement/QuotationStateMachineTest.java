@@ -1,10 +1,10 @@
 package com.valeerp.procurement;
 
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.PurchaseOrder;
-import com.nomos.inventory.service.model.Quotation;
-import com.nomos.inventory.service.model.QuotationStatus;
-import com.nomos.inventory.service.model.Supplier;
+import com.valeerp.inventory.service.model.Product;
+import com.valeerp.inventory.service.model.PurchaseOrder;
+import com.valeerp.inventory.service.model.Quotation;
+import com.valeerp.inventory.service.model.QuotationStatus;
+import com.valeerp.inventory.service.model.Supplier;
 import com.valeerp.catalog.CostingMethod;
 import com.valeerp.kernel.DomainException;
 import com.valeerp.kernel.Money;

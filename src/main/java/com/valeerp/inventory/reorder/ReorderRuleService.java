@@ -1,8 +1,8 @@
 package com.valeerp.inventory.reorder;
 
-import com.nomos.inventory.service.repository.InventoryItemRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.WarehouseRepository;
+import com.valeerp.inventory.service.repository.InventoryItemRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.WarehouseRepository;
 import com.valeerp.inventory.reorder.ReorderRuleDtos.CreateReorderRuleRequest;
 import com.valeerp.inventory.reorder.ReorderRuleDtos.ReplenishmentSuggestionResponse;
 import com.valeerp.inventory.reorder.ReorderRuleDtos.ReorderRuleResponse;

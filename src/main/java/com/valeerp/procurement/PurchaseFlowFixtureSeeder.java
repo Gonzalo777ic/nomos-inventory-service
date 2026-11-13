@@ -1,16 +1,16 @@
 package com.valeerp.procurement;
 
-import com.nomos.inventory.service.model.OrderStatus;
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.PurchaseOrder;
-import com.nomos.inventory.service.model.Quotation;
-import com.nomos.inventory.service.model.Supplier;
-import com.nomos.inventory.service.model.Warehouse;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.PurchaseOrderRepository;
-import com.nomos.inventory.service.repository.QuotationRepository;
-import com.nomos.inventory.service.repository.SupplierRepository;
-import com.nomos.inventory.service.repository.WarehouseRepository;
+import com.valeerp.inventory.service.model.OrderStatus;
+import com.valeerp.inventory.service.model.Product;
+import com.valeerp.inventory.service.model.PurchaseOrder;
+import com.valeerp.inventory.service.model.Quotation;
+import com.valeerp.inventory.service.model.Supplier;
+import com.valeerp.inventory.service.model.Warehouse;
+import com.valeerp.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.PurchaseOrderRepository;
+import com.valeerp.inventory.service.repository.QuotationRepository;
+import com.valeerp.inventory.service.repository.SupplierRepository;
+import com.valeerp.inventory.service.repository.WarehouseRepository;
 import com.valeerp.kernel.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +26,11 @@ import java.util.List;
 
 /**
  * Fixture end-to-end del flujo de compra dentro de este servicio: RFQ → OC → recepción.
- * No llama a otros microservicios. Activar con {@code nomos.procurement.seed.enabled=true}.
+ * No llama a otros microservicios. Activar con {@code valeerp.procurement.seed.enabled=true}.
  */
 @Component
 @Order(200)
-@ConditionalOnProperty(prefix = "nomos.procurement.seed", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "valeerp.procurement.seed", name = "enabled", havingValue = "true")
 public class PurchaseFlowFixtureSeeder implements ApplicationRunner {
 
     public static final String FIXTURE_MARKER = "FIXTURE:RFQ-PO-RECEIPT";
@@ -75,7 +75,7 @@ public class PurchaseFlowFixtureSeeder implements ApplicationRunner {
         }
         List<Product> products = productRepository.findAll();
         if (products.isEmpty()) {
-            log.warn("Purchase flow fixture skipped: need products (enable nomos.catalog.seed.enabled)");
+            log.warn("Purchase flow fixture skipped: need products (enable valeerp.catalog.seed.enabled)");
             return;
         }
         ensureMainWarehouse();

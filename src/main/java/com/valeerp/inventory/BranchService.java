@@ -1,7 +1,7 @@
 package com.valeerp.inventory;
 
-import com.nomos.inventory.service.model.Branch;
-import com.nomos.inventory.service.repository.BranchRepository;
+import com.valeerp.inventory.service.model.Branch;
+import com.valeerp.inventory.service.repository.BranchRepository;
 import com.valeerp.inventory.BranchDtos.BranchResponse;
 import com.valeerp.inventory.BranchDtos.CreateBranchRequest;
 import com.valeerp.inventory.BranchDtos.UpdateBranchRequest;

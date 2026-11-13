@@ -1,9 +1,9 @@
 package com.valeerp.inventory.stock;
 
-import com.nomos.inventory.service.model.InventoryItem;
-import com.nomos.inventory.service.model.InventoryMovement;
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.Warehouse;
+import com.valeerp.inventory.service.model.InventoryItem;
+import com.valeerp.inventory.service.model.InventoryMovement;
+import com.valeerp.inventory.service.model.Product;
+import com.valeerp.inventory.service.model.Warehouse;
 import com.valeerp.catalog.CostingMethod;
 import com.valeerp.inventory.OperationType;
 import com.valeerp.kernel.DomainException;

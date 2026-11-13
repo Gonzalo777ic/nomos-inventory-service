@@ -1,0 +1,20 @@
+package com.valeerp.inventory.service.repository;
+
+import com.valeerp.inventory.service.model.InventoryMovement;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+
+@Repository
+public interface InventoryMovementRepository extends JpaRepository<InventoryMovement, Long> {
+
+    
+    List<InventoryMovement> findByProductIdOrderByMovementDateDesc(Long productId);
+
+    List<InventoryMovement> findByReferenceServiceAndReferenceId(String referenceService, Long referenceId);
+
+    
+    List<InventoryMovement> findByReferenceIdAndReferenceService(Long referenceId, String referenceService);
+}

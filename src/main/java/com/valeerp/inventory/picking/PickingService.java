@@ -1,10 +1,10 @@
 package com.valeerp.inventory.picking;
 
-import com.nomos.inventory.service.model.InventoryBookRefs;
-import com.nomos.inventory.service.model.InventoryItem;
-import com.nomos.inventory.service.model.PickingStatus;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.WarehouseRepository;
+import com.valeerp.inventory.service.model.InventoryBookRefs;
+import com.valeerp.inventory.service.model.InventoryItem;
+import com.valeerp.inventory.service.model.PickingStatus;
+import com.valeerp.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.WarehouseRepository;
 import com.valeerp.inventory.OperationType;
 import com.valeerp.inventory.OperationTypePolicy;
 import com.valeerp.inventory.StockReservationService;

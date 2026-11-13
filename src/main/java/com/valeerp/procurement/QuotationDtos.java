@@ -1,6 +1,6 @@
 package com.valeerp.procurement;
 
-import com.nomos.inventory.service.model.QuotationStatus;
+import com.valeerp.inventory.service.model.QuotationStatus;
 import com.valeerp.kernel.Money;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

@@ -1,7 +1,7 @@
 package com.valeerp.catalog;
 
-import com.nomos.inventory.service.model.Category;
-import com.nomos.inventory.service.repository.CategoryRepository;
+import com.valeerp.inventory.service.model.Category;
+import com.valeerp.inventory.service.repository.CategoryRepository;
 import com.valeerp.catalog.CategoryDtos.CategoryResponse;
 import com.valeerp.catalog.CategoryDtos.CreateCategoryRequest;
 import com.valeerp.catalog.CategoryDtos.UpdateCategoryRequest;

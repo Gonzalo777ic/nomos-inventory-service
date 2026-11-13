@@ -1,6 +1,6 @@
 package com.valeerp.inventory;
 
-import com.nomos.inventory.service.model.MovementType;
+import com.valeerp.inventory.service.model.MovementType;
 import com.valeerp.kernel.Currency;
 import com.valeerp.kernel.DomainException;
 import com.valeerp.kernel.Money;

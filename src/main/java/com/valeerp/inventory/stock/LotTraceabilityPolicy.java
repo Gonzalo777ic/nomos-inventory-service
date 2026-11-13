@@ -1,6 +1,6 @@
 package com.valeerp.inventory.stock;
 
-import com.nomos.inventory.service.model.InventoryItem;
+import com.valeerp.inventory.service.model.InventoryItem;
 import com.valeerp.kernel.DomainException;
 
 /**

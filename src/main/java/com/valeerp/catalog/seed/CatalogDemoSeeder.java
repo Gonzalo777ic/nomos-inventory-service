@@ -1,13 +1,13 @@
 package com.valeerp.catalog.seed;
 
-import com.nomos.inventory.service.model.Brand;
-import com.nomos.inventory.service.model.Category;
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.UnitOfMeasure;
-import com.nomos.inventory.service.repository.BrandRepository;
-import com.nomos.inventory.service.repository.CategoryRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.UnitOfMeasureRepository;
+import com.valeerp.inventory.service.model.Brand;
+import com.valeerp.inventory.service.model.Category;
+import com.valeerp.inventory.service.model.Product;
+import com.valeerp.inventory.service.model.UnitOfMeasure;
+import com.valeerp.inventory.service.repository.BrandRepository;
+import com.valeerp.inventory.service.repository.CategoryRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.UnitOfMeasureRepository;
 import com.valeerp.catalog.CostingMethod;
 import com.valeerp.catalog.UomCategory;
 import com.valeerp.catalog.seed.CatalogSeedSkuCatalog.SkuSpec;
@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Seed local de catálogo (50+ SKUs). Solo corre si {@code nomos.catalog.seed.enabled=true}.
+ * Seed local de catálogo (50+ SKUs). Solo corre si {@code valeerp.catalog.seed.enabled=true}.
  * No borra datos: completa maestros faltantes e inserta SKUs ausentes vía {@link Product#register}.
  */
 @Component
 @Order(100)
-@ConditionalOnProperty(prefix = "nomos.catalog.seed", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "valeerp.catalog.seed", name = "enabled", havingValue = "true")
 public class CatalogDemoSeeder implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(CatalogDemoSeeder.class);

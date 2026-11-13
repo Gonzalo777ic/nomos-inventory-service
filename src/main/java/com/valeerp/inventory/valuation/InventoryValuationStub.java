@@ -1,7 +1,7 @@
 package com.valeerp.inventory.valuation;
 
-import com.nomos.inventory.service.model.InventoryItem;
-import com.nomos.inventory.service.repository.InventoryItemRepository;
+import com.valeerp.inventory.service.model.InventoryItem;
+import com.valeerp.inventory.service.repository.InventoryItemRepository;
 import com.valeerp.kernel.Currency;
 import com.valeerp.kernel.Money;
 import org.springframework.stereotype.Service;

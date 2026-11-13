@@ -1,7 +1,7 @@
 package com.valeerp.procurement;
 
-import com.nomos.inventory.service.model.Quotation;
-import com.nomos.inventory.service.repository.QuotationRepository;
+import com.valeerp.inventory.service.model.Quotation;
+import com.valeerp.inventory.service.repository.QuotationRepository;
 import com.valeerp.kernel.DomainException;
 import com.valeerp.procurement.QuotationComparative.ComparisonResult;
 import com.valeerp.procurement.QuotationComparative.Offer;

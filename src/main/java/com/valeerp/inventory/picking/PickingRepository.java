@@ -1,6 +1,6 @@
 package com.valeerp.inventory.picking;
 
-import com.nomos.inventory.service.model.PickingStatus;
+import com.valeerp.inventory.service.model.PickingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

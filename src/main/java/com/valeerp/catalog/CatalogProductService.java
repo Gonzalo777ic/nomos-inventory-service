@@ -1,14 +1,14 @@
 package com.valeerp.catalog;
 
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.ProductVariant;
-import com.nomos.inventory.service.model.ProductVariantAttribute;
-import com.nomos.inventory.service.repository.BrandRepository;
-import com.nomos.inventory.service.repository.CategoryRepository;
-import com.nomos.inventory.service.repository.ProductAttributeRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.ProductVariantRepository;
-import com.nomos.inventory.service.repository.UnitOfMeasureRepository;
+import com.valeerp.inventory.service.model.Product;
+import com.valeerp.inventory.service.model.ProductVariant;
+import com.valeerp.inventory.service.model.ProductVariantAttribute;
+import com.valeerp.inventory.service.repository.BrandRepository;
+import com.valeerp.inventory.service.repository.CategoryRepository;
+import com.valeerp.inventory.service.repository.ProductAttributeRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.ProductVariantRepository;
+import com.valeerp.inventory.service.repository.UnitOfMeasureRepository;
 import com.valeerp.catalog.CatalogProductDtos.AttributeValueDto;
 import com.valeerp.catalog.CatalogProductDtos.CreateProductRequest;
 import com.valeerp.catalog.CatalogProductDtos.CreateVariantRequest;

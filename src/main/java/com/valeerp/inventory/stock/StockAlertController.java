@@ -1,7 +1,7 @@
 package com.valeerp.inventory.stock;
 
-import com.nomos.inventory.service.model.AlertStatus;
-import com.nomos.inventory.service.model.dto.StockAlertDTO;
+import com.valeerp.inventory.service.model.AlertStatus;
+import com.valeerp.inventory.service.model.dto.StockAlertDTO;
 import com.valeerp.inventory.stock.StockAlertDtos.AlertResponse;
 import com.valeerp.inventory.stock.StockAlertDtos.EvaluationSummary;
 import com.valeerp.inventory.stock.StockAlertDtos.ExpirySnapshot;

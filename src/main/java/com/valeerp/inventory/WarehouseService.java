@@ -1,9 +1,9 @@
 package com.valeerp.inventory;
 
-import com.nomos.inventory.service.model.Branch;
-import com.nomos.inventory.service.model.Warehouse;
-import com.nomos.inventory.service.repository.BranchRepository;
-import com.nomos.inventory.service.repository.WarehouseRepository;
+import com.valeerp.inventory.service.model.Branch;
+import com.valeerp.inventory.service.model.Warehouse;
+import com.valeerp.inventory.service.repository.BranchRepository;
+import com.valeerp.inventory.service.repository.WarehouseRepository;
 import com.valeerp.inventory.WarehouseDtos.CreateWarehouseRequest;
 import com.valeerp.inventory.WarehouseDtos.UpdateWarehouseRequest;
 import com.valeerp.inventory.WarehouseDtos.WarehouseResponse;

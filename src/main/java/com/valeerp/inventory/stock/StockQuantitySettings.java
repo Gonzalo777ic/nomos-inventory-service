@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class StockQuantitySettings {
 
     /**
-     * Si es false, {@link com.nomos.inventory.service.model.InventoryItem#applyDelta(int, boolean)}
+     * Si es false, {@link com.valeerp.inventory.service.model.InventoryItem#applyDelta(int, boolean)}
      * rechaza saldo negativo.
      */
     private boolean allowNegative = false;

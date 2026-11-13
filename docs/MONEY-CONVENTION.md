@@ -1,6 +1,6 @@
 # Convención Money / Currency (ValeERP)
 
-Aplicable a todos los servicios Java del monorepo. Referencia piloto: `nomos-inventory-service`.
+Aplicable a todos los servicios Java del monorepo. Referencia piloto: inventario de ValeERP.
 
 ## Regla
 

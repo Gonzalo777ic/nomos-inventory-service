@@ -1,12 +1,12 @@
 package com.valeerp.procurement;
 
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.PurchaseOrder;
-import com.nomos.inventory.service.model.PurchaseOrderDetail;
-import com.nomos.inventory.service.model.Supplier;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.PurchaseOrderRepository;
-import com.nomos.inventory.service.repository.SupplierRepository;
+import com.valeerp.inventory.service.model.Product;
+import com.valeerp.inventory.service.model.PurchaseOrder;
+import com.valeerp.inventory.service.model.PurchaseOrderDetail;
+import com.valeerp.inventory.service.model.Supplier;
+import com.valeerp.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.PurchaseOrderRepository;
+import com.valeerp.inventory.service.repository.SupplierRepository;
 import com.valeerp.kernel.DomainException;
 import com.valeerp.procurement.PurchaseOrderDtos.CreatePurchaseOrderRequest;
 import com.valeerp.procurement.PurchaseOrderDtos.LineRequest;

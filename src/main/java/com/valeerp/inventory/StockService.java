@@ -1,14 +1,14 @@
 package com.valeerp.inventory;
 
-import com.nomos.inventory.service.model.InventoryItem;
-import com.nomos.inventory.service.model.InventoryMovement;
-import com.nomos.inventory.service.model.MovementType;
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.Warehouse;
-import com.nomos.inventory.service.repository.InventoryItemRepository;
-import com.nomos.inventory.service.repository.InventoryMovementRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.WarehouseRepository;
+import com.valeerp.inventory.service.model.InventoryItem;
+import com.valeerp.inventory.service.model.InventoryMovement;
+import com.valeerp.inventory.service.model.MovementType;
+import com.valeerp.inventory.service.model.Product;
+import com.valeerp.inventory.service.model.Warehouse;
+import com.valeerp.inventory.service.repository.InventoryItemRepository;
+import com.valeerp.inventory.service.repository.InventoryMovementRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.WarehouseRepository;
 import com.valeerp.inventory.location.InternalLocation;
 import com.valeerp.inventory.location.InternalLocationRepository;
 import com.valeerp.inventory.location.InternalLocationType;

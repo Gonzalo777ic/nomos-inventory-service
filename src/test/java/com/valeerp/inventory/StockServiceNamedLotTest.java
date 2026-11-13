@@ -1,9 +1,9 @@
 package com.valeerp.inventory;
 
-import com.nomos.inventory.service.repository.InventoryItemRepository;
-import com.nomos.inventory.service.repository.InventoryMovementRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.WarehouseRepository;
+import com.valeerp.inventory.service.repository.InventoryItemRepository;
+import com.valeerp.inventory.service.repository.InventoryMovementRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.WarehouseRepository;
 import com.valeerp.inventory.location.InternalLocationRepository;
 import com.valeerp.inventory.stock.StockLotRepository;
 import com.valeerp.inventory.stock.StockQuantityPolicy;

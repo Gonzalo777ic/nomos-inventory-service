@@ -1,6 +1,6 @@
 package com.valeerp.inventory.location;
 
-import com.nomos.inventory.service.repository.WarehouseRepository;
+import com.valeerp.inventory.service.repository.WarehouseRepository;
 import com.valeerp.inventory.location.InternalLocationDtos.CreateInternalLocationRequest;
 import com.valeerp.inventory.location.InternalLocationDtos.InternalLocationResponse;
 import com.valeerp.inventory.location.InternalLocationDtos.UpdateInternalLocationRequest;

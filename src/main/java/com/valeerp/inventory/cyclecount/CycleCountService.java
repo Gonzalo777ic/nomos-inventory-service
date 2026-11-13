@@ -1,10 +1,10 @@
 package com.valeerp.inventory.cyclecount;
 
-import com.nomos.inventory.service.model.InventoryBookRefs;
-import com.nomos.inventory.service.model.InventoryItem;
-import com.nomos.inventory.service.repository.InventoryItemRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.WarehouseRepository;
+import com.valeerp.inventory.service.model.InventoryBookRefs;
+import com.valeerp.inventory.service.model.InventoryItem;
+import com.valeerp.inventory.service.repository.InventoryItemRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.WarehouseRepository;
 import com.valeerp.inventory.OperationType;
 import com.valeerp.inventory.StockService;
 import com.valeerp.inventory.cyclecount.CycleCountDtos.CreateCycleCountRequest;
@@ -21,7 +21,7 @@ import java.time.Instant;
 import java.util.List;
 
 /**
- * Conteo cíclico: al completar, genera {@link com.nomos.inventory.service.model.InventoryMovement}
+ * Conteo cíclico: al completar, genera {@link com.valeerp.inventory.service.model.InventoryMovement}
  * compensatorios (ADJUSTMENT). El libro permanece consultable; no soft-delete de movimientos.
  */
 @Service

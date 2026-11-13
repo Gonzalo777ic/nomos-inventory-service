@@ -1,6 +1,6 @@
 package com.valeerp.mrp;
 
-import com.nomos.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
 import com.valeerp.kernel.Actors;
 import com.valeerp.kernel.DomainException;
 import com.valeerp.mrp.BillOfMaterials.TheoreticalNeed;

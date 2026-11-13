@@ -1,10 +1,10 @@
 package com.valeerp.catalog;
 
-import com.nomos.inventory.service.model.ProductAttachment;
-import com.nomos.inventory.service.model.ProductImage;
-import com.nomos.inventory.service.repository.ProductAttachmentRepository;
-import com.nomos.inventory.service.repository.ProductImageRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.model.ProductAttachment;
+import com.valeerp.inventory.service.model.ProductImage;
+import com.valeerp.inventory.service.repository.ProductAttachmentRepository;
+import com.valeerp.inventory.service.repository.ProductImageRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
 import com.valeerp.catalog.ProductMediaDtos.AttachFileRequest;
 import com.valeerp.catalog.ProductMediaDtos.AttachImageRequest;
 import com.valeerp.catalog.ProductMediaDtos.AttachmentResponse;

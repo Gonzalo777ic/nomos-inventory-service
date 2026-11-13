@@ -1,6 +1,6 @@
 # Inventory valuation stub (local)
 
-**Status:** documented stub inside `nomos-inventory-service`.  
+**Status:** documented stub inside el inventario de ValeERP.  
 **No Feign / no cross-accounting integration.** Contabilidad remains owner of journal entries.
 
 ## Modes
@@ -19,7 +19,7 @@ Returns a read-only `ValuationSnapshot` with lines per quant and a Money total. 
 ## Explicit non-goals
 
 - No `JournalEntry` creation.
-- No Feign to `nomos-store-service` Contabilidad.
+- No Feign to la contabilidad de ValeERP.
 - No posting of COGS / stock valuation accounts.
 
 When Contabilidad is ready, replace this stub with a published port (e.g. `InventoryValued` event) owned by inventory and consumed by accounting — still without Feign from UI.

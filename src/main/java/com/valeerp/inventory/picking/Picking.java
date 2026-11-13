@@ -1,6 +1,6 @@
 package com.valeerp.inventory.picking;
 
-import com.nomos.inventory.service.model.PickingStatus;
+import com.valeerp.inventory.service.model.PickingStatus;
 import com.valeerp.inventory.OperationType;
 import com.valeerp.kernel.DomainException;
 import jakarta.persistence.CascadeType;

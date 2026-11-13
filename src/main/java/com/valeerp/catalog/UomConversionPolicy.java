@@ -1,7 +1,7 @@
 package com.valeerp.catalog;
 
-import com.nomos.inventory.service.model.UnitOfMeasure;
-import com.nomos.inventory.service.model.UomConversion;
+import com.valeerp.inventory.service.model.UnitOfMeasure;
+import com.valeerp.inventory.service.model.UomConversion;
 import com.valeerp.kernel.DomainException;
 
 import java.math.BigDecimal;

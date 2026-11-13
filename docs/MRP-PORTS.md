@@ -1,6 +1,6 @@
 # MRP — puertos de integración con inventario
 
-Fecha: 10 de noviembre de 2026. Alcance: `nomos-inventory-service` (App MRP).
+Fecha: 10 de noviembre de 2026. Alcance: inventario de ValeERP (App MRP).
 
 ## Objetivo
 

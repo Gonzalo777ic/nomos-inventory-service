@@ -1,7 +1,7 @@
 package com.valeerp.catalog;
 
-import com.nomos.inventory.service.model.Brand;
-import com.nomos.inventory.service.repository.BrandRepository;
+import com.valeerp.inventory.service.model.Brand;
+import com.valeerp.inventory.service.repository.BrandRepository;
 import com.valeerp.catalog.BrandDtos.BrandResponse;
 import com.valeerp.catalog.BrandDtos.CreateBrandRequest;
 import com.valeerp.catalog.BrandDtos.UpdateBrandRequest;

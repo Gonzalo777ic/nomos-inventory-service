@@ -1,14 +1,14 @@
 package com.valeerp.catalog;
 
-import com.nomos.inventory.service.model.PriceList;
-import com.nomos.inventory.service.model.PriceListItem;
-import com.nomos.inventory.service.model.PriceRule;
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.repository.CategoryRepository;
-import com.nomos.inventory.service.repository.PriceListItemRepository;
-import com.nomos.inventory.service.repository.PriceListRepository;
-import com.nomos.inventory.service.repository.PriceRuleRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.model.PriceList;
+import com.valeerp.inventory.service.model.PriceListItem;
+import com.valeerp.inventory.service.model.PriceRule;
+import com.valeerp.inventory.service.model.Product;
+import com.valeerp.inventory.service.repository.CategoryRepository;
+import com.valeerp.inventory.service.repository.PriceListItemRepository;
+import com.valeerp.inventory.service.repository.PriceListRepository;
+import com.valeerp.inventory.service.repository.PriceRuleRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
 import com.valeerp.catalog.PriceListDtos.CreatePriceListRequest;
 import com.valeerp.catalog.PriceListDtos.CreatePriceRuleRequest;
 import com.valeerp.catalog.PriceListDtos.PriceListItemResponse;

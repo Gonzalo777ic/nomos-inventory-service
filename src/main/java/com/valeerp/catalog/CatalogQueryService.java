@@ -1,9 +1,9 @@
 package com.valeerp.catalog;
 
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.repository.CategoryRepository;
-import com.nomos.inventory.service.repository.ProductImageRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.model.Product;
+import com.valeerp.inventory.service.repository.CategoryRepository;
+import com.valeerp.inventory.service.repository.ProductImageRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
 import com.valeerp.kernel.DomainException;
 import com.valeerp.kernel.Money;
 import org.springframework.data.domain.Page;

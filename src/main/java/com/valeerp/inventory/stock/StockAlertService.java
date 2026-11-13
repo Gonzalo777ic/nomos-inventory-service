@@ -1,14 +1,14 @@
 package com.valeerp.inventory.stock;
 
-import com.nomos.inventory.service.model.Alert;
-import com.nomos.inventory.service.model.AlertStatus;
-import com.nomos.inventory.service.model.AlertType;
-import com.nomos.inventory.service.model.InventoryItem;
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.model.dto.StockAlertDTO;
-import com.nomos.inventory.service.repository.AlertRepository;
-import com.nomos.inventory.service.repository.InventoryItemRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.model.Alert;
+import com.valeerp.inventory.service.model.AlertStatus;
+import com.valeerp.inventory.service.model.AlertType;
+import com.valeerp.inventory.service.model.InventoryItem;
+import com.valeerp.inventory.service.model.Product;
+import com.valeerp.inventory.service.model.dto.StockAlertDTO;
+import com.valeerp.inventory.service.repository.AlertRepository;
+import com.valeerp.inventory.service.repository.InventoryItemRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
 import com.valeerp.inventory.stock.StockAlertDtos.AlertResponse;
 import com.valeerp.inventory.stock.StockAlertDtos.EvaluationSummary;
 import com.valeerp.inventory.stock.StockAlertDtos.ExpirySnapshot;

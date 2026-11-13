@@ -1,7 +1,7 @@
 package com.valeerp.procurement;
 
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.SupplierRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.SupplierRepository;
 import com.valeerp.kernel.Actors;
 import com.valeerp.kernel.DomainException;
 import com.valeerp.kernel.Money;

@@ -1,9 +1,9 @@
 package com.valeerp.catalog;
 
-import com.nomos.inventory.service.model.UnitOfMeasure;
-import com.nomos.inventory.service.model.UomConversion;
-import com.nomos.inventory.service.repository.UnitOfMeasureRepository;
-import com.nomos.inventory.service.repository.UomConversionRepository;
+import com.valeerp.inventory.service.model.UnitOfMeasure;
+import com.valeerp.inventory.service.model.UomConversion;
+import com.valeerp.inventory.service.repository.UnitOfMeasureRepository;
+import com.valeerp.inventory.service.repository.UomConversionRepository;
 import com.valeerp.catalog.CatalogUomDtos.ConvertRequest;
 import com.valeerp.catalog.CatalogUomDtos.ConvertResponse;
 import com.valeerp.catalog.CatalogUomDtos.ConversionResponse;

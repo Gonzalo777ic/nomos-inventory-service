@@ -1,10 +1,10 @@
 package com.valeerp.inventory;
 
-import com.nomos.inventory.service.model.InventoryItem;
-import com.nomos.inventory.service.model.Product;
-import com.nomos.inventory.service.repository.InventoryItemRepository;
-import com.nomos.inventory.service.repository.ProductRepository;
-import com.nomos.inventory.service.repository.WarehouseRepository;
+import com.valeerp.inventory.service.model.InventoryItem;
+import com.valeerp.inventory.service.model.Product;
+import com.valeerp.inventory.service.repository.InventoryItemRepository;
+import com.valeerp.inventory.service.repository.ProductRepository;
+import com.valeerp.inventory.service.repository.WarehouseRepository;
 import com.valeerp.inventory.StockDtos.OpenQuantRequest;
 import com.valeerp.inventory.StockDtos.QuantResponse;
 import com.valeerp.inventory.StockDtos.UpdateQuantRequest;

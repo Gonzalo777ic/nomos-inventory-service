@@ -1,7 +1,7 @@
 package com.valeerp.inventory.stock;
 
-import com.nomos.inventory.service.model.AlertStatus;
-import com.nomos.inventory.service.model.AlertType;
+import com.valeerp.inventory.service.model.AlertStatus;
+import com.valeerp.inventory.service.model.AlertType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
